@@ -9,6 +9,11 @@ import Login from './pages/Login'
 import AdminEquipos from './pages/AdminEquipos'
 import AdminJugadores from './pages/AdminJugadores'
 import AdminPartidos from './pages/AdminPartidos'
+import EstadisticasPartidos from "./pages/EstadisticasPartidos";
+
+
+
+
 
 function Inicio() {
   return (
@@ -136,6 +141,11 @@ function Inicio() {
             <span>Goleadores</span>
           </Link>
 
+          <Link to="/estadisticas" className="menu-card">
+    <span className="icon">📊</span>
+    <span>Estadísticas</span>
+  </Link>
+
         </section>
 
       </main>
@@ -207,7 +217,13 @@ function App() {
         element={<AdminPartidos />}
       />
 
+     <Route
+  path="/estadisticas"
+  element={<EstadisticasPartidos />}
+/>
+
     </Routes>
+    
   )
 }
 

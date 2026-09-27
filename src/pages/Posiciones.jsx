@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import * as XLSX from 'xlsx'
+
 
 function Posiciones() {
   const [posiciones, setPosiciones] = useState([])
@@ -26,16 +28,18 @@ function Posiciones() {
         .order('nombre'),
 
       supabase
-        .from('partidos')
-        .select(`
-          id,
-          local_id,
-          visitante_id,
-          goles_local,
-          goles_visitante,
-          jornada
-        `)
-        .order('jornada')
+  .from('partidos')
+  .select(`
+    id,
+    local_id,
+    visitante_id,
+    goles_local,
+    goles_visitante,
+    jornada,
+    jugado
+  `)
+  .order('jornada')
+
     ])
 
     if (equiposError) {
@@ -70,6 +74,7 @@ function Posiciones() {
       }
     })
 
+
     // Procesar partidos
     partidos.forEach(partido => {
       const local = tabla[partido.local_id]
@@ -78,22 +83,16 @@ function Posiciones() {
       if (!local || !visitante) return
 
       const golesLocal =
-        Number(partido.goles_local) || 0
+  Number(partido.goles_local) || 0
 
-      const golesVisitante =
-        Number(partido.goles_visitante) || 0
+const golesVisitante =
+  Number(partido.goles_visitante) || 0
 
-      /*
-       * IMPORTANTE:
-       * Por ahora consideramos jugado un partido
-       * cuando tiene un resultado diferente de 0-0.
-       */
-      if (
-        golesLocal === 0 &&
-        golesVisitante === 0
-      ) {
-        return
-      }
+// Solo ignoramos partidos que todavía no se han jugado
+if (!partido.jugado) {
+  return
+}
+
 
       local.pj++
       visitante.pj++
@@ -169,25 +168,65 @@ function Posiciones() {
     setLoading(false)
   }
 
+
+   function exportarExcel() {
+  const filas = posiciones.map(equipo => ({
+    Posición: equipo.posicion,
+    Equipo: equipo.equipo,
+    PJ: equipo.pj,
+    PG: equipo.pg,
+    PE: equipo.pe,
+    PP: equipo.pp,
+    GF: equipo.gf,
+    GC: equipo.gc,
+    DG: equipo.dg,
+    PTS: equipo.pts
+  }))
+
+  const hoja = XLSX.utils.json_to_sheet(filas)
+
+  const libro = XLSX.utils.book_new()
+
+  XLSX.utils.book_append_sheet(
+    libro,
+    hoja,
+    'Posiciones'
+  )
+
+  XLSX.writeFile(
+    libro,
+    'tabla_posiciones.xlsx'
+  )
+} 
   return (
     <div className="page">
 
       <header className="page-header">
 
-        <Link
-          to="/"
-          className="back-button"
-        >
-          ← Volver
-        </Link>
+  <Link
+    to="/"
+    className="back-button"
+  >
+    ← Volver
+  </Link>
 
-        <h1>🏆 Tabla de posiciones</h1>
+  <h1>🏆 Tabla de posiciones</h1>
 
-        <p>
-          Clasificación actual del campeonato
-        </p>
+  <p>
+    Clasificación actual del campeonato
+  </p>
 
-      </header>
+  <button
+    type="button"
+    className="exportar-excel-button"
+    onClick={exportarExcel}
+    disabled={posiciones.length === 0}
+  >
+    📥 Descargar Excel
+  </button>
+
+</header>
+
 
       <main className="page-content">
 

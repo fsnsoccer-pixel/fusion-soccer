@@ -3074,4 +3074,1538 @@ a {
   gap: 10px;
 }
 
+/* =========================================================
+   ESTADÍSTICAS DEL PARTIDO
+   ========================================================= */
+
+.admin-partido-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.estadisticas-editor {
+  margin-top: 15px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(55,214,122,0.18);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.estadisticas-editor-header {
+  margin-bottom: 18px;
+}
+
+.estadisticas-editor-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.estadisticas-editor-header p {
+  margin: 6px 0 0;
+  color: #819087;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+/* =========================================================
+   TABLA
+   ========================================================= */
+
+.estadisticas-tabla {
+  width: 100%;
+  overflow-x: auto;
+
+  background: rgba(0,0,0,0.12);
+
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+
+/* =========================================================
+   FILAS
+   ========================================================= */
+
+.estadisticas-fila {
+  display: grid;
+
+  grid-template-columns:
+    minmax(180px, 1fr)
+    125px
+    125px
+    125px;
+
+  align-items: center;
+
+  min-height: 58px;
+
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+
+  color: #ffffff;
+}
+
+.estadisticas-fila:last-child {
+  border-bottom: none;
+}
+
+/* =========================================================
+   CABECERA
+   ========================================================= */
+
+.estadisticas-cabecera {
+  background: rgba(55,214,122,0.10);
+
+  color: #37d67a;
+
+  font-weight: 800;
+
+  min-height: 48px;
+}
+
+.estadisticas-cabecera > div {
+  text-align: center;
+}
+
+.estadisticas-cabecera > div:first-child {
+  text-align: left;
+
+  padding-left: 18px;
+}
+
+/* =========================================================
+   EQUIPO
+   ========================================================= */
+
+.estadisticas-equipo-titulo {
+  background: rgba(55,214,122,0.06);
+
+  color: #37d67a;
+
+  font-weight: 800;
+
+  padding: 10px 18px;
+
+  border-bottom: 1px solid rgba(55,214,122,0.12);
+}
+
+/* =========================================================
+   JUGADOR
+   ========================================================= */
+
+.estadisticas-jugador {
+  padding: 8px 18px;
+
+  font-weight: 600;
+
+  color: #ffffff;
+}
+
+/* =========================================================
+   CONTROLES
+   ========================================================= */
+
+.estadistica-control {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 4px;
+}
+
+.estadistica-control button {
+  width: 28px;
+  height: 30px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 6px;
+
+  background: #202923;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+.estadistica-control button:hover {
+  background: rgba(55,214,122,0.15);
+
+  border-color: rgba(55,214,122,0.3);
+
+  color: #37d67a;
+}
+
+.estadistica-control input {
+  width: 42px;
+  height: 30px;
+
+  border: 1px solid rgba(255,255,255,0.1);
+
+  border-radius: 6px;
+
+  text-align: center;
+
+  font-weight: 700;
+
+  color: #ffffff;
+
+  background: #111613;
+
+  outline: none;
+}
+
+.estadistica-control input:focus {
+  border-color: #37d67a;
+
+  background: rgba(55,214,122,0.06);
+}
+
+/* =========================================================
+   COLUMNA AMARILLA
+   ========================================================= */
+
+.estadisticas-fila > div:nth-child(3)
+  .estadistica-control input {
+
+  border-color: rgba(255,193,7,0.35);
+
+  background: rgba(255,193,7,0.05);
+
+  color: #ffc107;
+}
+
+/* =========================================================
+   COLUMNA ROJA
+   ========================================================= */
+
+.estadisticas-fila > div:nth-child(4)
+  .estadistica-control input {
+
+  border-color: rgba(255,80,80,0.3);
+
+  background: rgba(255,80,80,0.05);
+
+  color: #ff8585;
+}
+
+/* =========================================================
+   BOTÓN ESTADÍSTICAS
+   ========================================================= */
+
+.admin-goals-button {
+  flex: 1;
+}
+
+/* =========================================================
+   HOVER DE FILAS
+   ========================================================= */
+
+.estadisticas-fila:hover {
+  background: rgba(55,214,122,0.035);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .admin-partido-actions {
+    flex-direction: column;
+  }
+
+  .estadisticas-editor {
+    padding: 10px;
+  }
+
+  .estadisticas-fila {
+    grid-template-columns:
+      minmax(150px, 1fr)
+      105px
+      105px
+      105px;
+  }
+
+  .estadisticas-jugador {
+    padding-left: 12px;
+
+    font-size: 14px;
+  }
+
+  .estadistica-control {
+    gap: 2px;
+  }
+
+  .estadistica-control button {
+    width: 25px;
+    height: 28px;
+  }
+
+  .estadistica-control input {
+    width: 35px;
+    height: 28px;
+  }
+}
+
+/* =========================================================
+   ESTADÍSTICAS DE PARTIDOS
+   ========================================================= */
+
+.estadisticas-partidos-page {
+  width: 100%;
+}
+
+.estadisticas-partidos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.estadisticas-partidos-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 28px;
+}
+
+.estadisticas-partidos-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.exportar-excel-button {
+  border: none;
+  background: #16a34a;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.exportar-excel-button:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.exportar-excel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.estadisticas-partidos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.estadisticas-partido-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.estadisticas-partido-header {
+  width: 100%;
+  border: none;
+  background: white;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 150px 1fr 35px;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.estadisticas-partido-header:hover {
+  background: #f8fafc;
+}
+
+.estadisticas-jornada {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.estadisticas-jornada span {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.estadisticas-jornada small {
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+.estadisticas-resultado {
+  display: grid;
+  grid-template-columns: 1fr 70px 1fr;
+  align-items: center;
+  gap: 15px;
+}
+
+.estadisticas-resultado > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.estadisticas-resultado > div:first-child {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.estadisticas-resultado > div:last-child {
+  justify-content: flex-start;
+}
+
+.estadisticas-resultado strong {
+  color: #1e293b;
+}
+
+.estadisticas-resultado span {
+  min-width: 30px;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.estadisticas-final {
+  justify-content: center !important;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.estadisticas-flecha {
+  color: #64748b;
+  font-size: 16px;
+  text-align: center;
+}
+
+.estadisticas-partido-contenido {
+  border-top: 1px solid #e2e8f0;
+  padding: 20px;
+  background: #f8fafc;
+}
+
+.estadisticas-seccion {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.estadisticas-seccion:last-child {
+  margin-bottom: 0;
+}
+
+.estadisticas-seccion h3 {
+  margin: 0 0 14px;
+  color: #0f172a;
+  font-size: 17px;
+}
+
+.eventos-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evento-jugador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.evento-jugador > span {
+  font-size: 18px;
+}
+
+.evento-jugador strong {
+  color: #1e293b;
+}
+
+.evento-jugador small {
+  margin-left: auto;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.evento-jugador.gol {
+  border-left: 3px solid #22c55e;
+}
+
+.evento-jugador.amarilla {
+  border-left: 3px solid #facc15;
+}
+
+.evento-jugador.roja {
+  border-left: 3px solid #ef4444;
+}
+
+.sin-estadisticas {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+
+  .estadisticas-partidos-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .estadisticas-partidos-header h1 {
+    font-size: 23px;
+  }
+
+  .exportar-excel-button {
+    width: 100%;
+  }
+
+  .estadisticas-partido-header {
+    grid-template-columns: 1fr 30px;
+    gap: 10px;
+  }
+
+  .estadisticas-jornada {
+    grid-column: 1 / -1;
+  }
+
+  .estadisticas-resultado {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 55px 1fr;
+    gap: 8px;
+  }
+
+  .estadisticas-resultado strong {
+    font-size: 14px;
+  }
+
+  .estadisticas-resultado span {
+    font-size: 21px;
+  }
+
+  .estadisticas-flecha {
+    position: absolute;
+    right: 18px;
+  }
+
+  .estadisticas-partido-header {
+    position: relative;
+  }
+
+  .estadisticas-partido-contenido {
+    padding: 10px;
+  }
+
+  .estadisticas-seccion {
+    padding: 12px;
+  }
+}
+/* =========================================================
+   ESTADÍSTICAS DE PARTIDOS
+   ========================================================= */
+
+.estadisticas-partidos-page {
+  width: 100%;
+}
+
+.estadisticas-partidos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.estadisticas-partidos-header h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 28px;
+}
+
+.estadisticas-partidos-header p {
+  margin: 6px 0 0;
+  color: #819087;
+}
+
+.exportar-excel-button {
+  border: none;
+  background: #37d67a;
+  color: #07100b;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.exportar-excel-button:hover {
+  background: #48e887;
+  transform: translateY(-1px);
+}
+
+.exportar-excel-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =========================
+   LISTA DE PARTIDOS
+========================= */
+
+.estadisticas-partidos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.estadisticas-partido-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+
+/* =========================
+   CABECERA DEL PARTIDO
+========================= */
+
+.estadisticas-partido-header {
+  width: 100%;
+
+  border: none;
+
+  background: transparent;
+
+  color: white;
+
+  padding: 18px;
+
+  display: grid;
+
+  grid-template-columns: 150px 1fr 35px;
+
+  align-items: center;
+
+  gap: 20px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: .2s ease;
+}
+
+.estadisticas-partido-header:hover {
+  background: rgba(55,214,122,0.06);
+}
+
+.estadisticas-jornada {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.estadisticas-jornada span {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.estadisticas-jornada small {
+  color: #37d67a;
+  text-transform: capitalize;
+}
+
+
+/* =========================
+   RESULTADO
+========================= */
+
+.estadisticas-resultado {
+  display: grid;
+
+  grid-template-columns: 1fr 70px 1fr;
+
+  align-items: center;
+
+  gap: 15px;
+}
+
+.estadisticas-resultado > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.estadisticas-resultado > div:first-child {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.estadisticas-resultado > div:last-child {
+  justify-content: flex-start;
+}
+
+.estadisticas-resultado strong {
+  color: #ffffff;
+}
+
+.estadisticas-resultado span {
+  min-width: 30px;
+
+  color: #37d67a;
+
+  font-size: 24px;
+
+  font-weight: 900;
+}
+
+.estadisticas-final {
+  justify-content: center !important;
+
+  color: #718078;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.estadisticas-flecha {
+  color: #37d67a;
+
+  font-size: 16px;
+
+  text-align: center;
+}
+
+
+/* =========================
+   CONTENIDO
+========================= */
+
+.estadisticas-partido-contenido {
+  border-top: 1px solid rgba(255,255,255,0.08);
+
+  padding: 20px;
+
+  background: rgba(255,255,255,0.025);
+}
+
+.estadisticas-seccion {
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 12px;
+
+  padding: 16px;
+
+  margin-bottom: 14px;
+}
+
+.estadisticas-seccion:last-child {
+  margin-bottom: 0;
+}
+
+.estadisticas-seccion h3 {
+  margin: 0 0 14px;
+
+  color: #ffffff;
+
+  font-size: 17px;
+}
+
+
+/* =========================
+   EVENTOS
+========================= */
+
+.eventos-grid {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.evento-jugador {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  background: rgba(255,255,255,0.04);
+
+  color: white;
+}
+
+.evento-jugador > span {
+  font-size: 18px;
+}
+
+.evento-jugador strong {
+  color: #ffffff;
+}
+
+.evento-jugador small {
+  margin-left: auto;
+
+  color: #718078;
+
+  font-weight: 700;
+}
+
+.evento-jugador.gol {
+  border-left: 3px solid #37d67a;
+}
+
+.evento-jugador.amarilla {
+  border-left: 3px solid #ffc107;
+}
+
+.evento-jugador.roja {
+  border-left: 3px solid #ff5050;
+}
+
+.sin-estadisticas {
+  margin: 0;
+
+  color: #718078;
+
+  font-size: 14px;
+}
+
+
+/* =========================
+   MÓVIL
+========================= */
+
+@media (max-width: 700px) {
+
+  .estadisticas-partidos-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .estadisticas-partidos-header h1 {
+    font-size: 23px;
+  }
+
+  .exportar-excel-button {
+    width: 100%;
+  }
+
+  .estadisticas-partido-header {
+    grid-template-columns: 1fr 30px;
+    gap: 10px;
+    position: relative;
+  }
+
+  .estadisticas-jornada {
+    grid-column: 1 / -1;
+  }
+
+  .estadisticas-resultado {
+    grid-column: 1 / -1;
+
+    grid-template-columns: 1fr 55px 1fr;
+
+    gap: 8px;
+  }
+
+  .estadisticas-resultado strong {
+    font-size: 14px;
+  }
+
+  .estadisticas-resultado span {
+    font-size: 21px;
+  }
+
+  .estadisticas-flecha {
+    position: absolute;
+
+    right: 18px;
+  }
+
+  .estadisticas-partido-contenido {
+    padding: 10px;
+  }
+
+  .estadisticas-seccion {
+    padding: 12px;
+  }
+}
+/* =========================================================
+   ESTADÍSTICAS DE PARTIDOS - JORNADAS
+   ========================================================= */
+
+.estadisticas-jornadas {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* =========================================================
+   BLOQUE DE JORNADA
+   ========================================================= */
+
+.estadisticas-jornada-bloque {
+  width: 100%;
+
+  overflow: hidden;
+
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.035);
+
+  border: 1px solid rgba(255,255,255,0.09);
+}
+
+.estadisticas-jornada-bloque.jornada-estadisticas-abierta {
+  border-color: rgba(55,214,122,0.25);
+}
+
+/* =========================================================
+   HEADER JORNADA
+   ========================================================= */
+
+.estadisticas-jornada-header {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 18px 20px;
+
+  border: none;
+
+  background: rgba(55,214,122,0.07);
+
+  color: white;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: 0.2s ease;
+}
+
+.estadisticas-jornada-header:hover {
+  background: rgba(55,214,122,0.11);
+}
+
+.estadisticas-jornada-icon {
+  width: 46px;
+  height: 46px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: rgba(55,214,122,0.13);
+
+  font-size: 21px;
+}
+
+.estadisticas-jornada-info {
+  flex: 1;
+}
+
+.estadisticas-jornada-info h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 20px;
+
+  font-weight: 900;
+}
+
+.estadisticas-jornada-info p {
+  margin: 4px 0 0;
+
+  color: #37d67a;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.estadisticas-jornada-arrow {
+  color: #37d67a;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   PARTIDOS DE LA JORNADA
+   ========================================================= */
+
+.estadisticas-jornada-partidos {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  padding: 12px;
+}
+
+/* =========================================================
+   TARJETA PARTIDO
+   ========================================================= */
+
+.estadisticas-partido-card {
+  overflow: hidden;
+
+  border-radius: 15px;
+
+  background: rgba(0,0,0,0.14);
+
+  border: 1px solid rgba(255,255,255,0.07);
+
+  transition: 0.2s ease;
+}
+
+.estadisticas-partido-card:hover {
+  border-color: rgba(55,214,122,0.25);
+}
+
+.estadisticas-partido-card.estadisticas-partido-abierto {
+  border-color: rgba(55,214,122,0.25);
+}
+
+/* =========================================================
+   HEADER DEL PARTIDO
+   ========================================================= */
+
+.estadisticas-partido-card
+.estadisticas-partido-header {
+  width: 100%;
+
+  min-height: 80px;
+
+  display: grid;
+
+  grid-template-columns:
+    150px
+    1fr
+    30px;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 16px 18px;
+
+  border: none;
+
+  background: transparent;
+
+  color: white;
+
+  cursor: pointer;
+
+  text-align: left;
+}
+
+.estadisticas-partido-card
+.estadisticas-partido-header:hover {
+  background: rgba(55,214,122,0.035);
+}
+
+.estadisticas-fecha {
+  color: #819087;
+
+  font-size: 11px;
+
+  text-transform: capitalize;
+}
+
+/* =========================================================
+   RESULTADO
+   ========================================================= */
+
+.estadisticas-resultado {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    65px
+    1fr;
+
+  align-items: center;
+
+  gap: 15px;
+}
+
+.estadisticas-equipo-resultado {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  color: #ffffff;
+}
+
+.estadisticas-equipo-resultado.local {
+  justify-content: flex-end;
+
+  text-align: right;
+}
+
+.estadisticas-equipo-resultado.visitante {
+  justify-content: flex-start;
+
+  text-align: left;
+}
+
+.estadisticas-equipo-resultado strong {
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 800;
+}
+
+.estadisticas-equipo-resultado span {
+  min-width: 32px;
+
+  color: #37d67a;
+
+  font-size: 23px;
+
+  font-weight: 900;
+}
+
+.estadisticas-final {
+  text-align: center;
+
+  color: #718078;
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  letter-spacing: 1px;
+}
+
+.estadisticas-flecha {
+  color: #37d67a;
+
+  font-size: 11px;
+
+  text-align: center;
+}
+
+/* =========================================================
+   CONTENIDO DEL PARTIDO
+   ========================================================= */
+
+.estadisticas-partido-contenido {
+  padding: 15px;
+
+  background: rgba(255,255,255,0.025);
+
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+/* =========================================================
+   DOS EQUIPOS
+   ========================================================= */
+
+.estadisticas-equipos-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 12px;
+}
+
+.estadisticas-equipo {
+  overflow: hidden;
+
+  border-radius: 13px;
+
+  background: rgba(255,255,255,0.035);
+
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+/* =========================================================
+   HEADER EQUIPO
+   ========================================================= */
+
+.estadisticas-equipo-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 15px;
+
+  background: rgba(55,214,122,0.07);
+
+  border-bottom: 1px solid rgba(55,214,122,0.12);
+}
+
+.estadisticas-equipo-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: rgba(55,214,122,0.12);
+
+  font-size: 18px;
+}
+
+.estadisticas-equipo-header h3 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 900;
+}
+
+.estadisticas-equipo-header span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #718078;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   EVENTOS DEL EQUIPO
+   ========================================================= */
+
+.estadisticas-eventos {
+  padding: 10px;
+}
+
+.estadisticas-tipo {
+  padding: 10px 0;
+
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.estadisticas-tipo:last-child {
+  border-bottom: none;
+}
+
+.estadisticas-tipo-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 8px;
+
+  padding: 0 4px;
+
+  font-size: 11px;
+}
+
+.estadisticas-tipo-header strong {
+  font-weight: 800;
+}
+
+.gol-header {
+  color: #37d67a;
+}
+
+.amarilla-header {
+  color: #ffc107;
+}
+
+.roja-header {
+  color: #ff8585;
+}
+
+/* =========================================================
+   EVENTO
+   ========================================================= */
+
+.eventos-grid {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.evento-jugador {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  min-height: 36px;
+
+  padding: 7px 9px;
+
+  border-radius: 8px;
+
+  background: rgba(255,255,255,0.025);
+
+  border-left: 3px solid transparent;
+}
+
+.evento-jugador.gol {
+  border-left-color: #37d67a;
+}
+
+.evento-jugador.amarilla {
+  border-left-color: #ffc107;
+}
+
+.evento-jugador.roja {
+  border-left-color: #ff6b6b;
+}
+
+.evento-jugador > span:first-child {
+  font-size: 15px;
+}
+
+.evento-jugador-info {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+
+  min-width: 0;
+
+  flex: 1;
+}
+
+.evento-jugador-info strong {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+.evento-jugador-info small {
+  color: #718078;
+
+  font-size: 9px;
+}
+
+.evento-cantidad {
+  color: #ffffff !important;
+
+  font-size: 11px !important;
+
+  font-weight: 900;
+
+  margin-left: auto;
+}
+
+.sin-estadisticas {
+  margin: 5px 4px;
+
+  color: #64736b;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media (max-width: 750px) {
+
+  .estadisticas-jornada-header {
+    padding: 15px;
+  }
+
+  .estadisticas-jornada-icon {
+    width: 40px;
+    height: 40px;
+
+    font-size: 18px;
+  }
+
+  .estadisticas-jornada-info h2 {
+    font-size: 17px;
+  }
+
+  .estadisticas-jornada-partidos {
+    padding: 8px;
+  }
+
+  .estadisticas-partido-card
+  .estadisticas-partido-header {
+    grid-template-columns:
+      1fr
+      30px;
+
+    gap: 8px;
+
+    padding: 14px;
+  }
+
+  .estadisticas-fecha {
+    grid-column: 1 / -1;
+
+    text-align: center;
+  }
+
+  .estadisticas-resultado {
+    grid-column: 1 / -1;
+
+    grid-template-columns:
+      1fr
+      48px
+      1fr;
+
+    gap: 7px;
+  }
+
+  .estadisticas-equipo-resultado {
+    gap: 7px;
+  }
+
+  .estadisticas-equipo-resultado strong {
+    font-size: 12px;
+  }
+
+  .estadisticas-equipo-resultado span {
+    min-width: 25px;
+
+    font-size: 20px;
+  }
+
+  .estadisticas-final {
+    font-size: 8px;
+  }
+
+  .estadisticas-flecha {
+    position: absolute;
+
+    right: 14px;
+
+    top: 14px;
+  }
+
+  .estadisticas-partido-card
+  .estadisticas-partido-header {
+    position: relative;
+  }
+
+  .estadisticas-equipos-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 450px) {
+
+  .estadisticas-equipo-resultado strong {
+    font-size: 11px;
+  }
+
+  .estadisticas-equipo-resultado span {
+    font-size: 18px;
+  }
+
+  .estadisticas-partido-contenido {
+    padding: 9px;
+  }
+
+  .estadisticas-equipo-header {
+    padding: 12px;
+  }
+
+}
+.estadisticas-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.volver-inicio-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #1e293b;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.volver-inicio-button:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
 
