@@ -727,37 +727,6 @@ function AdminPartidos() {
           return
         }
       }
-
-      // ---------------------------------------
-      // Eliminar tarjetas anteriores
-      // ---------------------------------------
-
-      const {
-        error: deleteTarjetasError
-      } = await supabase
-        .from(
-          'estadisticas_partido'
-        )
-        .delete()
-        .eq(
-          'partido_id',
-          partido.id
-        )
-
-      if (deleteTarjetasError) {
-        console.error(
-          'ERROR ELIMINANDO TARJETAS:',
-          deleteTarjetasError
-        )
-
-        setError(
-          `No se pudieron actualizar las tarjetas: ${deleteTarjetasError.message}`
-        )
-
-        setGuardando(false)
-        return
-      }
-
       // ---------------------------------------
       // Preparar tarjetas
       // ---------------------------------------
@@ -801,37 +770,36 @@ function AdminPartidos() {
       }
 
       // ---------------------------------------
-      // Insertar tarjetas
-      // ---------------------------------------
+// Guardar tarjetas
+// ---------------------------------------
 
-      if (
-        registrosTarjetas.length >
-        0
-      ) {
-        const {
-          error: insertTarjetasError
-        } = await supabase
-          .from(
-            'estadisticas_partido'
-          )
-          .insert(
-            registrosTarjetas
-          )
-
-        if (insertTarjetasError) {
-          console.error(
-            'ERROR INSERTANDO TARJETAS:',
-            insertTarjetasError
-          )
-
-          setError(
-            `No se pudieron guardar las tarjetas: ${insertTarjetasError.message}`
-          )
-
-          setGuardando(false)
-          return
-        }
+if (registrosTarjetas.length > 0) {
+  const {
+    error: guardarTarjetasError
+  } = await supabase
+    .from('estadisticas_partido')
+    .upsert(
+      registrosTarjetas,
+      {
+        onConflict: 'partido_id,jugador_id'
       }
+    )
+
+  if (guardarTarjetasError) {
+    console.error(
+      'ERROR GUARDANDO TARJETAS:',
+      guardarTarjetasError
+    )
+
+    setError(
+      `No se pudieron guardar las tarjetas: ${guardarTarjetasError.message}`
+    )
+
+    setGuardando(false)
+    return
+  }
+}
+
 
       // ---------------------------------------
       // Éxito

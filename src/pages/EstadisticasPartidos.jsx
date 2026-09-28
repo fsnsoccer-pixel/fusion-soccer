@@ -637,7 +637,7 @@ function EstadisticasPartidos() {
           {jornadas.map(({ jornada, partidos: partidosJornada }) => {
 
             const jornadaAbierta =
-              jornadasAbiertas[jornada] ?? true
+              jornadasAbiertas[jornada] ?? false
 
             return (
               <section

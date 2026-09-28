@@ -99,6 +99,8 @@ function Fechas() {
 
       <main className="page-content">
 
+        {/* CARGANDO */}
+
         {loading && (
           <div className="empty-card">
 
@@ -117,6 +119,8 @@ function Fechas() {
           </div>
         )}
 
+        {/* ERROR */}
+
         {!loading && error && (
           <div className="empty-card error-card">
 
@@ -134,6 +138,8 @@ function Fechas() {
 
           </div>
         )}
+
+        {/* SIN PARTIDOS */}
 
         {!loading &&
           !error &&
@@ -155,6 +161,8 @@ function Fechas() {
             </div>
           )}
 
+        {/* CALENDARIO */}
+
         {!loading &&
           !error &&
           partidos.length > 0 && (
@@ -167,8 +175,17 @@ function Fechas() {
                   const abierta =
                     jornadaAbierta === jornada
 
-                  const fecha =
-                    partidosJornada[0]?.fecha
+                  // Contar solamente los partidos jugados
+                  const partidosJugados =
+                    partidosJornada.filter(
+                      partido => partido.jugado === true
+                    ).length
+
+                  // La jornada está completa únicamente
+                  // cuando TODOS sus partidos están jugados
+                  const jornadaCompleta =
+                    partidosJornada.length > 0 &&
+                    partidosJugados === partidosJornada.length
 
                   return (
                     <section
@@ -191,41 +208,46 @@ function Fechas() {
                         aria-expanded={abierta}
                       >
 
-                        <div className="fecha-icon">
-                          📅
+                        <div className="fecha-header-left">
+
+                          <div className="fecha-chevron">
+                            {abierta ? '▴' : '▾'}
+                          </div>
+
+                          <div className="fecha-info">
+
+                            <h2>
+                              Jornada {jornada}
+                            </h2>
+
+                            <p>
+                              {partidosJugados} de{' '}
+                              {partidosJornada.length} partidos
+                            </p>
+
+                          </div>
+
                         </div>
 
-                        <div className="fecha-info">
+                        {/* SOLO APARECE SI ESTÁ COMPLETA */}
 
-                          <h2>
-                            Fecha {jornada}
-                          </h2>
-
-                          <p>
-                            {formatearFecha(fecha)}
-                          </p>
-
-                        </div>
-
-                        <div className="fecha-flecha">
-                          {abierta ? '▲' : '▼'}
-                        </div>
+                        {jornadaCompleta && (
+                          <div className="fecha-estado">
+                            ✓ Completa
+                          </div>
+                        )}
 
                       </button>
-
 
                       {/* PARTIDOS */}
 
                       {abierta && (
-
                         <div className="fecha-acordeon-partidos">
 
                           {partidosJornada.map(partido => {
 
                             const local =
-                              obtenerEquipo(
-                                partido.local_id
-                              )
+                              obtenerEquipo(partido.local_id)
 
                             const visitante =
                               obtenerEquipo(
@@ -238,21 +260,37 @@ function Fechas() {
                                 key={partido.id}
                               >
 
-                                <div className="fecha-team local">
-                                  {local?.nombre ||
-                                    'Equipo local'}
+                                {/* FECHA */}
+
+                                <div className="partido-fecha">
+                                  {formatearFecha(
+                                    partido.fecha
+                                  )}
                                 </div>
 
-                                <div className="fecha-vs">
-                                  {partido.jugado
-                                    ? `${partido.goles_local} - ${partido.goles_visitante}`
-                                    : 'VS'
-                                  }
-                                </div>
+                                {/* PARTIDO */}
 
-                                <div className="fecha-team visitante">
-                                  {visitante?.nombre ||
-                                    'Equipo visitante'}
+                                <div className="partido-equipos">
+
+                                  <div className="fecha-team local">
+                                    {local?.nombre ||
+                                      'Equipo local'}
+                                  </div>
+
+                                  <div className="fecha-vs">
+
+                                    {partido.jugado === true
+                                      ? `${partido.goles_local} - ${partido.goles_visitante}`
+                                      : 'VS'
+                                    }
+
+                                  </div>
+
+                                  <div className="fecha-team visitante">
+                                    {visitante?.nombre ||
+                                      'Equipo visitante'}
+                                  </div>
+
                                 </div>
 
                               </div>
@@ -260,7 +298,6 @@ function Fechas() {
                           })}
 
                         </div>
-
                       )}
 
                     </section>

@@ -10,6 +10,7 @@ import AdminEquipos from './pages/AdminEquipos'
 import AdminJugadores from './pages/AdminJugadores'
 import AdminPartidos from './pages/AdminPartidos'
 import EstadisticasPartidos from "./pages/EstadisticasPartidos";
+import ProtectedRoute from './pages/ProtectedRoute'
 
 
 
@@ -161,7 +162,14 @@ function Inicio() {
 function App() {
   return (
     <Routes>
-
+<Route
+  path="/admin"
+  element={
+    <ProtectedRoute>
+      <Admin />
+    </ProtectedRoute>
+  }
+/>
       <Route
         path="/"
         element={<Inicio />}
@@ -192,10 +200,6 @@ function App() {
         element={<Login />}
       />
 
-      <Route
-        path="/admin"
-        element={<Admin />}
-      />
 
       <Route
         path="/admin/goleadores"
@@ -216,6 +220,7 @@ function App() {
         path="/admin/partidos"
         element={<AdminPartidos />}
       />
+
 
      <Route
   path="/estadisticas"

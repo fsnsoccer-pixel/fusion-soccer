@@ -221,11 +221,18 @@ function Partidos() {
   key={partido.id}
 >
 
+  {/* FECHA DEL PARTIDO */}
+
+  <div className="match-date">
+    {formatearFecha(partido.fecha)}
+  </div>
+
+  {/* EQUIPO LOCAL */}
+
   <div className="team team-local">
 
     <span className="team-name">
-      {local?.nombre ||
-        'Equipo local'}
+      {local?.nombre || 'Equipo local'}
     </span>
 
     <span className="score">
@@ -235,6 +242,8 @@ function Partidos() {
     </span>
 
   </div>
+
+  {/* ESTADO */}
 
   <div className="match-status">
 
@@ -246,6 +255,8 @@ function Partidos() {
 
   </div>
 
+  {/* EQUIPO VISITANTE */}
+
   <div className="team team-visitor">
 
     <span className="score">
@@ -255,13 +266,13 @@ function Partidos() {
     </span>
 
     <span className="team-name">
-      {visitante?.nombre ||
-        'Equipo visitante'}
+      {visitante?.nombre || 'Equipo visitante'}
     </span>
 
   </div>
 
 </article>
+
 
                             )
                           })}
