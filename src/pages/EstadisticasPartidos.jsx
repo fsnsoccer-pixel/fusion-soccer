@@ -582,10 +582,10 @@ function EstadisticasPartidos() {
       <div className="estadisticas-partidos-header">
 
   <div>
-    <h1>📊 Estadísticas de partidos</h1>
+    <h1>⚽ Información de partidos</h1>
 
     <p>
-      Goles y tarjetas de todos los partidos.
+      Goles, tarjetas y resultados del campeonato.
     </p>
   </div>
 

@@ -112,7 +112,7 @@ function Inicio() {
             CAMPEONATO
           </p>
 
-          <h1>Fusion Soccer</h1>
+          <h1>FUSION SOCCER CUP</h1>
 
           <p className="description">
             Toda la información del campeonato en un solo lugar.
@@ -122,11 +122,11 @@ function Inicio() {
 
         <section className="menu">
 
-          <Link to="/partidos" className="menu-card">
+          {/*</section></main>Link to="/partidos" className="menu-card">
             <span className="icon">⚽</span>
             <span>Partidos</span>
           </Link>
-
+        */}
           <Link to="/fechas" className="menu-card">
             <span className="icon">📅</span>
             <span>Fechas</span>
@@ -143,8 +143,8 @@ function Inicio() {
           </Link>
 
           <Link to="/estadisticas" className="menu-card">
-    <span className="icon">📊</span>
-    <span>Estadísticas</span>
+    <span className="icon">⚽</span>
+    <span>Partidos</span>
   </Link>
 
         </section>
@@ -152,7 +152,7 @@ function Inicio() {
       </main>
 
       <footer className="footer">
-        <p>© 2026 Fusion Soccer</p>
+        <p>Temporada Clausura 2026</p>
       </footer>
 
     </div>
