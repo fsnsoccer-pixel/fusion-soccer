@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import logosEquipos from '../logosEquipos'
+
+
 
 function Fechas() {
   const [partidos, setPartidos] = useState([])
@@ -272,26 +275,49 @@ function Fechas() {
 
                                 <div className="partido-equipos">
 
-                                  <div className="fecha-team local">
-                                    {local?.nombre ||
-                                      'Equipo local'}
-                                  </div>
+  <div className="fecha-team local">
 
-                                  <div className="fecha-vs">
+    {local && logosEquipos[local.nombre] && (
+      <img
+        src={logosEquipos[local.nombre]}
+        alt=""
+        className="equipo-icono"
+      />
+    )}
 
-                                    {partido.jugado === true
-                                      ? `${partido.goles_local} - ${partido.goles_visitante}`
-                                      : 'VS'
-                                    }
+    <span>
+      {local?.nombre || 'Equipo local'}
+    </span>
 
-                                  </div>
+  </div>
 
-                                  <div className="fecha-team visitante">
-                                    {visitante?.nombre ||
-                                      'Equipo visitante'}
-                                  </div>
+  <div className="fecha-vs">
 
-                                </div>
+    {partido.jugado === true
+      ? `${partido.goles_local} - ${partido.goles_visitante}`
+      : 'VS'
+    }
+
+  </div>
+
+  <div className="fecha-team visitante">
+
+    {visitante && logosEquipos[visitante.nombre] && (
+      <img
+        src={logosEquipos[visitante.nombre]}
+        alt=""
+        className="equipo-icono"
+      />
+    )}
+
+    <span>
+      {visitante?.nombre || 'Equipo visitante'}
+    </span>
+
+  </div>
+
+</div>
+
 
                               </div>
                             )

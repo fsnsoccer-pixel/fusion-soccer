@@ -4957,3 +4957,111 @@ a {
 
   text-transform: capitalize;
 }
+.fecha-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fecha-team.local {
+  justify-content: flex-end;
+}
+
+.fecha-team.visitante {
+  justify-content: flex-start;
+}
+
+.equipo-icono {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.partido-equipos {
+  display: grid;
+  grid-template-columns: 1fr 90px 1fr;
+  align-items: center;
+  gap: 20px;
+}
+
+.fecha-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.equipo-icono {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.fecha-vs {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.estadisticas-resultado {
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.estadisticas-equipo-resultado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  min-width: 0;
+}
+
+.estadisticas-equipo-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.estadisticas-equipo-resultado strong {
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.estadisticas-final {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.admin-equipo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-equipo-logo {
+  width: 65px;
+  height: 65px;
+  object-fit: contain;
+  display: block;
+}
+
+.admin-equipo-nombre {
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}

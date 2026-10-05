@@ -207,19 +207,32 @@ function App() {
       />
 
       <Route
-        path="/admin/equipos"
-        element={<AdminEquipos />}
-      />
+  path="/admin/equipos"
+  element={
+    <ProtectedRoute>
+      <AdminEquipos />
+    </ProtectedRoute>
+  }
+/>
 
-      <Route
-        path="/admin/jugadores"
-        element={<AdminJugadores />}
-      />
+<Route
+  path="/admin/jugadores"
+  element={
+    <ProtectedRoute>
+      <AdminJugadores />
+    </ProtectedRoute>
+  }
+/>
 
-      <Route
-        path="/admin/partidos"
-        element={<AdminPartidos />}
-      />
+<Route
+  path="/admin/partidos"
+  element={
+    <ProtectedRoute>
+      <AdminPartidos />
+    </ProtectedRoute>
+  }
+/>
+  
 
 
      <Route

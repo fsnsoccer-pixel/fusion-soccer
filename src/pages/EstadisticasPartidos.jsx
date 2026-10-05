@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import * as XLSX from 'xlsx'
+import logosEquipos from '../logosEquipos'
+
+
 
 function EstadisticasPartidos() {
   const [partidos, setPartidos] = useState([])
@@ -173,25 +176,32 @@ function EstadisticasPartidos() {
   }
 
   function obtenerTarjetasEquipo(
-    estadisticasPartido,
-    equipoId,
-    tipo
-  ) {
-    return estadisticasPartido.filter(item => {
-      const jugador = obtenerJugador(item.jugador_id)
+  estadisticasPartido,
+  equipoId,
+  tipo
+) {
+  return estadisticasPartido.filter(item => {
+    const jugador = obtenerJugador(item.jugador_id)
 
-      if (
-        !jugadorPerteneceAEquipo(
-          jugador,
-          equipoId
-        )
-      ) {
-        return false
-      }
+    if (!jugador) {
+      return false
+    }
 
-      return Number(item[tipo] || 0) > 0
-    })
-  }
+    const jugadorEquipoId =
+      jugador.equipo_id ??
+      jugador.equipoId
+
+    if (
+      String(jugadorEquipoId) !==
+      String(equipoId)
+    ) {
+      return false
+    }
+
+    return Number(item[tipo] ?? 0) > 0
+  })
+}
+
 
   /*
    * Agrupa todos los partidos por jornada.
@@ -357,36 +367,42 @@ function EstadisticasPartidos() {
   }
 
   function renderEventoJugador({
-    icono,
-    jugador,
-    cantidad,
-    clase
-  }) {
-    return (
-      <div
-        className={`evento-jugador ${clase}`}
-        key={`${clase}-${jugador.id}`}
-      >
-        <span>{icono}</span>
-
-        <div className="evento-jugador-info">
-          <strong>
-            {obtenerNombreJugador(jugador)}
-          </strong>
-
-          <small>
-            {obtenerNumeroJugador(jugador)}
-          </small>
-        </div>
-
-        {cantidad > 1 && (
-          <span className="evento-cantidad">
-            x{cantidad}
-          </span>
-        )}
-      </div>
-    )
+  icono,
+  jugador,
+  cantidad,
+  clase,
+  idEvento
+}) {
+  if (!jugador) {
+    return null
   }
+
+  return (
+    <div
+      className={`evento-jugador ${clase}`}
+      key={`${clase}-${idEvento}`}
+    >
+      <span>{icono}</span>
+
+      <div className="evento-jugador-info">
+        <strong>
+          {obtenerNombreJugador(jugador)}
+        </strong>
+
+        <small>
+          {obtenerNumeroJugador(jugador)}
+        </small>
+      </div>
+
+      {cantidad > 1 && (
+        <span className="evento-cantidad">
+          x{cantidad}
+        </span>
+      )}
+    </div>
+  )
+}
+
 
   function renderEquipoEstadisticas({
     equipo,
@@ -436,11 +452,13 @@ function EstadisticasPartidos() {
                     )
 
                   return renderEventoJugador({
-                    icono: '⚽',
-                    jugador,
-                    cantidad: 1,
-                    clase: 'gol'
-                  })
+  icono: '⚽',
+  jugador,
+  cantidad: 1,
+  clase: 'gol',
+  idEvento: gol.id
+})
+
                 })}
               </div>
             )}
@@ -467,15 +485,15 @@ function EstadisticasPartidos() {
                       item.jugador_id
                     )
 
-                  return renderEventoJugador({
-                    icono: '🟨',
-                    jugador,
-                    cantidad:
-                      Number(
-                        item.amarillas
-                      ),
-                    clase: 'amarilla'
-                  })
+ return renderEventoJugador({
+  icono: '🟨',
+  jugador,
+  cantidad: Number(item.amarillas),
+  clase: 'amarilla',
+  idEvento: item.id
+})
+
+
                 })}
               </div>
             )}
@@ -502,15 +520,14 @@ function EstadisticasPartidos() {
                       item.jugador_id
                     )
 
-                  return renderEventoJugador({
-                    icono: '🟥',
-                    jugador,
-                    cantidad:
-                      Number(
-                        item.rojas
-                      ),
-                    clase: 'roja'
-                  })
+                 return renderEventoJugador({
+  icono: '🟥',
+  jugador,
+  cantidad: Number(item.rojas),
+  clase: 'roja',
+  idEvento: item.id
+})
+
                 })}
               </div>
             )}
@@ -787,41 +804,56 @@ function EstadisticasPartidos() {
                               )}
                             </div>
 
-                            <div className="estadisticas-resultado">
+ <div className="estadisticas-resultado">
 
-                              <div className="estadisticas-equipo-resultado local">
-                                <strong>
-                                  {local?.nombre ||
-                                    'Equipo local'}
-                                </strong>
+  {/* LOCAL */}
 
-                                <span>
-                                  {partido.jugado
-                                    ? partido.goles_local
-                                    : '-'}
-                                </span>
-                              </div>
+  <div className="estadisticas-equipo-resultado local">
 
-                              <div className="estadisticas-final">
-                                {partido.jugado
-                                  ? 'FINAL'
-                                  : 'VS'}
-                              </div>
+    {local && logosEquipos[local.nombre] && (
+      <img
+        src={logosEquipos[local.nombre]}
+        alt=""
+        className="estadisticas-equipo-logo"
+      />
+    )}
 
-                              <div className="estadisticas-equipo-resultado visitante">
-                                <span>
-                                  {partido.jugado
-                                    ? partido.goles_visitante
-                                    : '-'}
-                                </span>
+    <strong>
+      {local?.nombre || 'Equipo local'}
+    </strong>
 
-                                <strong>
-                                  {visitante?.nombre ||
-                                    'Equipo visitante'}
-                                </strong>
-                              </div>
+  </div>
 
-                            </div>
+  {/* MARCADOR */}
+
+  <div className="estadisticas-final">
+
+    {partido.jugado
+      ? `${partido.goles_local} - ${partido.goles_visitante}`
+      : 'VS'}
+
+  </div>
+
+  {/* VISITANTE */}
+
+  <div className="estadisticas-equipo-resultado visitante">
+
+    {visitante && logosEquipos[visitante.nombre] && (
+      <img
+        src={logosEquipos[visitante.nombre]}
+        alt=""
+        className="estadisticas-equipo-logo"
+      />
+    )}
+
+    <strong>
+      {visitante?.nombre || 'Equipo visitante'}
+    </strong>
+
+  </div>
+
+</div>
+
 
                             <span className="estadisticas-flecha">
                               {abierto

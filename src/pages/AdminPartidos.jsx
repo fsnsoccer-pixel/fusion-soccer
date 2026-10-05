@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import logosEquipos from '../logosEquipos'
 
 function AdminPartidos() {
   const [partidos, setPartidos] = useState([])
@@ -106,6 +107,12 @@ function AdminPartidos() {
   // =========================================================
   // FUNCIONES GENERALES
   // =========================================================
+
+  function obtenerLogoEquipo(equipo) {
+  if (!equipo) return null
+
+  return logosEquipos[equipo.nombre] || null
+}
 
   function obtenerEquipo(id) {
     return equipos.find(
@@ -632,43 +639,7 @@ function AdminPartidos() {
         }
       }
 
-      // ---------------------------------------
-      // Validar goles
-      // ---------------------------------------
-
-      const golesLocal =
-        Number(
-          partido.goles_local
-        ) || 0
-
-      const golesVisitante =
-        Number(
-          partido.goles_visitante
-        ) || 0
-
-      const totalEsperado =
-        golesLocal +
-        golesVisitante
-
-      const totalRegistrado =
-        registrosGoles.length
-
-      if (
-        totalRegistrado !==
-        totalEsperado
-      ) {
-        setError(
-          `El resultado es ${golesLocal} - ${golesVisitante}. Debes asignar exactamente ${totalEsperado} gol${
-            totalEsperado === 1
-              ? ''
-              : 'es'
-          }. Actualmente tienes ${totalRegistrado}.`
-        )
-
-        setGuardando(false)
-        return
-      }
-
+      
       // ---------------------------------------
       // Eliminar goles anteriores
       // ---------------------------------------
@@ -1048,12 +1019,21 @@ if (registrosTarjetas.length > 0) {
 
                                     <div className="admin-equipo admin-local">
 
-                                      <span>
-                                        {local?.nombre ||
-                                          'Equipo'}
-                                      </span>
+  {obtenerLogoEquipo(local) && (
+    <img
+      src={obtenerLogoEquipo(local)}
+      alt={local?.nombre || 'Equipo'}
+      className="admin-equipo-logo"
+    />
+  )}
 
-                                    </div>
+  <span className="admin-equipo-nombre">
+    {local?.nombre || 'Equipo'}
+  </span>
+
+</div>
+
+
 
                                     <div className="admin-resultado">
 
@@ -1075,14 +1055,23 @@ if (registrosTarjetas.length > 0) {
 
                                     </div>
 
-                                    <div className="admin-equipo admin-visitante">
+<div className="admin-equipo admin-visitante">
 
-                                      <span>
-                                        {visitante?.nombre ||
-                                          'Equipo'}
-                                      </span>
+  {obtenerLogoEquipo(visitante) && (
+    <img
+      src={obtenerLogoEquipo(visitante)}
+      alt={visitante?.nombre || 'Equipo'}
+      className="admin-equipo-logo"
+    />
+  )}
 
-                                    </div>
+  <span className="admin-equipo-nombre">
+    {visitante?.nombre || 'Equipo'}
+  </span>
+
+</div>
+
+
 
                                   </div>
 
