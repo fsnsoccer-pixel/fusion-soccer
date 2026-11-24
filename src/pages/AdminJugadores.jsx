@@ -349,11 +349,10 @@ function AdminJugadores() {
               {jugadores.map(jugador => (
 
                 <div
-                  className={`admin-list-card ${
-                    jugador.activo
-                      ? ''
-                      : 'equipo-inactivo'
-                  }`}
+                  className={`admin-list-card ${jugador.activo
+                    ? ''
+                    : 'equipo-inactivo'
+                    }`}
                   key={jugador.id}
                 >
 

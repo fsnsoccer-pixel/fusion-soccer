@@ -176,68 +176,131 @@ function EstadisticasPartidos() {
   }
 
   function obtenerTarjetasEquipo(
-  estadisticasPartido,
-  equipoId,
-  tipo
-) {
-  return estadisticasPartido.filter(item => {
-    const jugador = obtenerJugador(item.jugador_id)
+    estadisticasPartido,
+    equipoId,
+    tipo
+  ) {
+    return estadisticasPartido.filter(item => {
+      const jugador = obtenerJugador(item.jugador_id)
 
-    if (!jugador) {
-      return false
-    }
+      if (!jugador) {
+        return false
+      }
 
-    const jugadorEquipoId =
-      jugador.equipo_id ??
-      jugador.equipoId
+      const jugadorEquipoId =
+        jugador.equipo_id ??
+        jugador.equipoId
 
-    if (
-      String(jugadorEquipoId) !==
-      String(equipoId)
-    ) {
-      return false
-    }
+      if (
+        String(jugadorEquipoId) !==
+        String(equipoId)
+      ) {
+        return false
+      }
 
-    return Number(item[tipo] ?? 0) > 0
-  })
-}
+      return Number(item[tipo] ?? 0) > 0
+    })
+  }
 
 
   /*
    * Agrupa todos los partidos por jornada.
    */
+
   function obtenerJornadas() {
-    const grupos = {}
+    // Partidos normales
+    const partidosNormales = partidos.filter(
+      partido =>
+        partido.jornada !== null &&
+        partido.jornada >= 1 &&
+        partido.jornada <= 10
+    )
 
-    partidos.forEach(partido => {
-      const jornada = partido.jornada ?? 'Sin jornada'
+    // Partidos sin jornada: fases finales
+    const partidosFinales = partidos
+      .filter(partido => partido.jornada === null)
+      .sort((a, b) => {
+        return String(a.fecha || '').localeCompare(
+          String(b.fecha || '')
+        )
+      })
 
-      if (!grupos[jornada]) {
-        grupos[jornada] = []
+    // Identificar cada fase
+    const semifinales = []
+    const finales = []
+
+    partidosFinales.forEach((partido, index) => {
+      const texto = [
+        partido.nombre,
+        partido.fase,
+        partido.tipo,
+        partido.descripcion
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      if (texto.includes('semifinal')) {
+        semifinales.push(partido)
+      } else if (texto.includes('final')) {
+        finales.push(partido)
+      } else {
+        // Respaldo si Supabase no tiene un campo de fase:
+        // los dos primeros partidos son semifinales.
+        if (index < 2) {
+          semifinales.push(partido)
+        } else {
+          finales.push(partido)
+        }
       }
-
-      grupos[jornada].push(partido)
     })
 
-    return Object.entries(grupos)
-      .sort(([a], [b]) => {
-        const numeroA = Number(a)
-        const numeroB = Number(b)
+    const grupos = []
 
-        if (
-          !Number.isNaN(numeroA) &&
-          !Number.isNaN(numeroB)
-        ) {
-          return numeroA - numeroB
-        }
-
-        return String(a).localeCompare(String(b))
+    // Primero la gran final
+    if (finales.length > 0) {
+      grupos.push({
+        jornada: 'gran-final',
+        titulo: '🏆 Gran Final',
+        partidos: finales
       })
-      .map(([jornada, partidosJornada]) => ({
-        jornada,
-        partidos: partidosJornada
-      }))
+    }
+
+    // Después las semifinales
+    if (semifinales.length > 0) {
+      grupos.push({
+        jornada: 'semifinales',
+        titulo: '⚔️ Semifinales',
+        partidos: semifinales
+      })
+    }
+
+    // Finalmente, las jornadas normales
+    const jornadas = {}
+
+    partidosNormales.forEach(partido => {
+      const jornada = partido.jornada
+
+      if (!jornadas[jornada]) {
+        jornadas[jornada] = []
+      }
+
+      jornadas[jornada].push(partido)
+    })
+
+    Object.entries(jornadas)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .forEach(([jornada, partidosJornada]) => {
+        grupos.push({
+          jornada,
+          titulo: `Jornada ${jornada}`,
+          partidos: partidosJornada
+        })
+      })
+
+    return grupos
   }
+
 
   function togglePartido(partidoId) {
     setPartidosAbiertos(prev => ({
@@ -367,41 +430,41 @@ function EstadisticasPartidos() {
   }
 
   function renderEventoJugador({
-  icono,
-  jugador,
-  cantidad,
-  clase,
-  idEvento
-}) {
-  if (!jugador) {
-    return null
-  }
+    icono,
+    jugador,
+    cantidad,
+    clase,
+    idEvento
+  }) {
+    if (!jugador) {
+      return null
+    }
 
-  return (
-    <div
-      className={`evento-jugador ${clase}`}
-      key={`${clase}-${idEvento}`}
-    >
-      <span>{icono}</span>
+    return (
+      <div
+        className={`evento-jugador ${clase}`}
+        key={`${clase}-${idEvento}`}
+      >
+        <span>{icono}</span>
 
-      <div className="evento-jugador-info">
-        <strong>
-          {obtenerNombreJugador(jugador)}
-        </strong>
+        <div className="evento-jugador-info">
+          <strong>
+            {obtenerNombreJugador(jugador)}
+          </strong>
 
-        <small>
-          {obtenerNumeroJugador(jugador)}
-        </small>
+          <small>
+            {obtenerNumeroJugador(jugador)}
+          </small>
+        </div>
+
+        {cantidad > 1 && (
+          <span className="evento-cantidad">
+            x{cantidad}
+          </span>
+        )}
       </div>
-
-      {cantidad > 1 && (
-        <span className="evento-cantidad">
-          x{cantidad}
-        </span>
-      )}
-    </div>
-  )
-}
+    )
+  }
 
 
   function renderEquipoEstadisticas({
@@ -452,12 +515,12 @@ function EstadisticasPartidos() {
                     )
 
                   return renderEventoJugador({
-  icono: '⚽',
-  jugador,
-  cantidad: 1,
-  clase: 'gol',
-  idEvento: gol.id
-})
+                    icono: '⚽',
+                    jugador,
+                    cantidad: 1,
+                    clase: 'gol',
+                    idEvento: gol.id
+                  })
 
                 })}
               </div>
@@ -485,13 +548,13 @@ function EstadisticasPartidos() {
                       item.jugador_id
                     )
 
- return renderEventoJugador({
-  icono: '🟨',
-  jugador,
-  cantidad: Number(item.amarillas),
-  clase: 'amarilla',
-  idEvento: item.id
-})
+                  return renderEventoJugador({
+                    icono: '🟨',
+                    jugador,
+                    cantidad: Number(item.amarillas),
+                    clase: 'amarilla',
+                    idEvento: item.id
+                  })
 
 
                 })}
@@ -520,13 +583,13 @@ function EstadisticasPartidos() {
                       item.jugador_id
                     )
 
-                 return renderEventoJugador({
-  icono: '🟥',
-  jugador,
-  cantidad: Number(item.rojas),
-  clase: 'roja',
-  idEvento: item.id
-})
+                  return renderEventoJugador({
+                    icono: '🟥',
+                    jugador,
+                    cantidad: Number(item.rojas),
+                    clase: 'roja',
+                    idEvento: item.id
+                  })
 
                 })}
               </div>
@@ -598,35 +661,35 @@ function EstadisticasPartidos() {
 
       <div className="estadisticas-partidos-header">
 
-  <div>
-    <h1>⚽ Información de partidos</h1>
+        <div>
+          <h1>⚽ Información de partidos</h1>
 
-    <p>
-      Goles, tarjetas y resultados del campeonato.
-    </p>
-  </div>
+          <p>
+            Goles, tarjetas y resultados del campeonato.
+          </p>
+        </div>
 
-  <div className="estadisticas-header-actions">
+        <div className="estadisticas-header-actions">
 
-    <Link
-      to="/"
-      className="volver-inicio-button"
-    >
-      🏠 Volver al inicio
-    </Link>
+          <Link
+            to="/"
+            className="volver-inicio-button"
+          >
+            🏠 Volver al inicio
+          </Link>
 
-    <button
-      type="button"
-      className="exportar-excel-button"
-      onClick={exportarExcel}
-      disabled={partidos.length === 0}
-    >
-      📥 Exportar a Excel
-    </button>
+          <button
+            type="button"
+            className="exportar-excel-button"
+            onClick={exportarExcel}
+            disabled={partidos.length === 0}
+          >
+            📥 Exportar a Excel
+          </button>
 
-  </div>
+        </div>
 
-</div>
+      </div>
 
 
       {partidos.length === 0 ? (
@@ -651,18 +714,17 @@ function EstadisticasPartidos() {
 
         <div className="estadisticas-jornadas">
 
-          {jornadas.map(({ jornada, partidos: partidosJornada }) => {
+          {jornadas.map(({ jornada, titulo, partidos: partidosJornada }) => {
 
             const jornadaAbierta =
               jornadasAbiertas[jornada] ?? false
 
             return (
               <section
-                className={`estadisticas-jornada-bloque ${
-                  jornadaAbierta
-                    ? 'jornada-estadisticas-abierta'
-                    : ''
-                }`}
+                className={`estadisticas-jornada-bloque ${jornadaAbierta
+                  ? 'jornada-estadisticas-abierta'
+                  : ''
+                  }`}
                 key={jornada}
               >
 
@@ -677,13 +739,17 @@ function EstadisticasPartidos() {
                 >
 
                   <div className="estadisticas-jornada-icon">
-                    📅
+                    {jornada === 'gran-final'
+                      ? '🏆'
+                      : jornada === 'semifinales'
+                        ? '⚔️'
+                        : '📅'}
                   </div>
 
                   <div className="estadisticas-jornada-info">
 
                     <h2>
-                      Jornada {jornada}
+                      {titulo}
                     </h2>
 
                     <p>
@@ -773,16 +839,15 @@ function EstadisticasPartidos() {
 
                       const abierto =
                         partidosAbiertos[
-                          partido.id
+                        partido.id
                         ]
 
                       return (
                         <article
-                          className={`estadisticas-partido-card ${
-                            abierto
-                              ? 'estadisticas-partido-abierto'
-                              : ''
-                          }`}
+                          className={`estadisticas-partido-card ${abierto
+                            ? 'estadisticas-partido-abierto'
+                            : ''
+                            }`}
                           key={partido.id}
                         >
 
@@ -804,55 +869,55 @@ function EstadisticasPartidos() {
                               )}
                             </div>
 
- <div className="estadisticas-resultado">
+                            <div className="estadisticas-resultado">
 
-  {/* LOCAL */}
+                              {/* LOCAL */}
 
-  <div className="estadisticas-equipo-resultado local">
+                              <div className="estadisticas-equipo-resultado local">
 
-    {local && logosEquipos[local.nombre] && (
-      <img
-        src={logosEquipos[local.nombre]}
-        alt=""
-        className="estadisticas-equipo-logo"
-      />
-    )}
+                                {local && logosEquipos[local.nombre] && (
+                                  <img
+                                    src={logosEquipos[local.nombre]}
+                                    alt=""
+                                    className="estadisticas-equipo-logo"
+                                  />
+                                )}
 
-    <strong>
-      {local?.nombre || 'Equipo local'}
-    </strong>
+                                <strong>
+                                  {local?.nombre || 'Equipo local'}
+                                </strong>
 
-  </div>
+                              </div>
 
-  {/* MARCADOR */}
+                              {/* MARCADOR */}
 
-  <div className="estadisticas-final">
+                              <div className="estadisticas-final">
 
-    {partido.jugado
-      ? `${partido.goles_local} - ${partido.goles_visitante}`
-      : 'VS'}
+                                {partido.jugado
+                                  ? `${partido.goles_local} - ${partido.goles_visitante}`
+                                  : 'VS'}
 
-  </div>
+                              </div>
 
-  {/* VISITANTE */}
+                              {/* VISITANTE */}
 
-  <div className="estadisticas-equipo-resultado visitante">
+                              <div className="estadisticas-equipo-resultado visitante">
 
-    {visitante && logosEquipos[visitante.nombre] && (
-      <img
-        src={logosEquipos[visitante.nombre]}
-        alt=""
-        className="estadisticas-equipo-logo"
-      />
-    )}
+                                {visitante && logosEquipos[visitante.nombre] && (
+                                  <img
+                                    src={logosEquipos[visitante.nombre]}
+                                    alt=""
+                                    className="estadisticas-equipo-logo"
+                                  />
+                                )}
 
-    <strong>
-      {visitante?.nombre || 'Equipo visitante'}
-    </strong>
+                                <strong>
+                                  {visitante?.nombre || 'Equipo visitante'}
+                                </strong>
 
-  </div>
+                              </div>
 
-</div>
+                            </div>
 
 
                             <span className="estadisticas-flecha">

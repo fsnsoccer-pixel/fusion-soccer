@@ -28,17 +28,19 @@ function Posiciones() {
         .order('nombre'),
 
       supabase
-  .from('partidos')
-  .select(`
+        .from('partidos')
+        .select(`
     id,
     local_id,
     visitante_id,
     goles_local,
     goles_visitante,
     jornada,
-    jugado
+    jugado,
+    fase
   `)
-  .order('jornada')
+        .eq('fase', 'REGULAR')
+        .order('jornada')
 
     ])
 
@@ -83,15 +85,15 @@ function Posiciones() {
       if (!local || !visitante) return
 
       const golesLocal =
-  Number(partido.goles_local) || 0
+        Number(partido.goles_local) || 0
 
-const golesVisitante =
-  Number(partido.goles_visitante) || 0
+      const golesVisitante =
+        Number(partido.goles_visitante) || 0
 
-// Solo ignoramos partidos que todavía no se han jugado
-if (!partido.jugado) {
-  return
-}
+      // Solo ignoramos partidos que todavía no se han jugado
+      if (!partido.jugado) {
+        return
+      }
 
 
       local.pj++
@@ -169,63 +171,63 @@ if (!partido.jugado) {
   }
 
 
-   function exportarExcel() {
-  const filas = posiciones.map(equipo => ({
-    Posición: equipo.posicion,
-    Equipo: equipo.equipo,
-    PJ: equipo.pj,
-    PG: equipo.pg,
-    PE: equipo.pe,
-    PP: equipo.pp,
-    GF: equipo.gf,
-    GC: equipo.gc,
-    DG: equipo.dg,
-    PTS: equipo.pts
-  }))
+  function exportarExcel() {
+    const filas = posiciones.map(equipo => ({
+      Posición: equipo.posicion,
+      Equipo: equipo.equipo,
+      PJ: equipo.pj,
+      PG: equipo.pg,
+      PE: equipo.pe,
+      PP: equipo.pp,
+      GF: equipo.gf,
+      GC: equipo.gc,
+      DG: equipo.dg,
+      PTS: equipo.pts
+    }))
 
-  const hoja = XLSX.utils.json_to_sheet(filas)
+    const hoja = XLSX.utils.json_to_sheet(filas)
 
-  const libro = XLSX.utils.book_new()
+    const libro = XLSX.utils.book_new()
 
-  XLSX.utils.book_append_sheet(
-    libro,
-    hoja,
-    'Posiciones'
-  )
+    XLSX.utils.book_append_sheet(
+      libro,
+      hoja,
+      'Posiciones'
+    )
 
-  XLSX.writeFile(
-    libro,
-    'tabla_posiciones.xlsx'
-  )
-} 
+    XLSX.writeFile(
+      libro,
+      'tabla_posiciones.xlsx'
+    )
+  }
   return (
     <div className="page">
 
       <header className="page-header">
 
-  <Link
-    to="/"
-    className="back-button"
-  >
-    ← Volver
-  </Link>
+        <Link
+          to="/"
+          className="back-button"
+        >
+          ← Volver
+        </Link>
 
-  <h1>🏆 Tabla de posiciones</h1>
+        <h1>🏆 Tabla de posiciones</h1>
 
-  <p>
-    Clasificación actual del campeonato
-  </p>
+        <p>
+          Clasificación actual del campeonato
+        </p>
 
-  <button
-    type="button"
-    className="exportar-excel-button"
-    onClick={exportarExcel}
-    disabled={posiciones.length === 0}
-  >
-    📥 Descargar Excel
-  </button>
+        <button
+          type="button"
+          className="exportar-excel-button"
+          onClick={exportarExcel}
+          disabled={posiciones.length === 0}
+        >
+          📥 Descargar Excel
+        </button>
 
-</header>
+      </header>
 
 
       <main className="page-content">
@@ -274,11 +276,10 @@ if (!partido.jugado) {
               {posiciones.map(equipo => (
 
                 <div
-                  className={`tabla-fila ${
-                    equipo.posicion === 1
+                  className={`tabla-fila ${equipo.posicion === 1
                       ? 'primero'
                       : ''
-                  }`}
+                    }`}
                   key={equipo.id}
                 >
 
@@ -323,8 +324,8 @@ if (!partido.jugado) {
                       equipo.dg > 0
                         ? 'dg-positivo'
                         : equipo.dg < 0
-                        ? 'dg-negativo'
-                        : ''
+                          ? 'dg-negativo'
+                          : ''
                     }
                   >
                     {equipo.dg > 0

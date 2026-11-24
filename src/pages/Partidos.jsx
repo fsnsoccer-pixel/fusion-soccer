@@ -155,9 +155,8 @@ function Partidos() {
 
                   return (
                     <section
-                      className={`jornada ${
-                        abierta ? 'jornada-abierta' : ''
-                      }`}
+                      className={`jornada ${abierta ? 'jornada-abierta' : ''
+                        }`}
                       key={jornada}
                     >
 
@@ -217,61 +216,61 @@ function Partidos() {
 
                             return (
                               <article
-  className="match-card"
-  key={partido.id}
->
+                                className="match-card"
+                                key={partido.id}
+                              >
 
-  {/* FECHA DEL PARTIDO */}
+                                {/* FECHA DEL PARTIDO */}
 
-  <div className="match-date">
-    {formatearFecha(partido.fecha)}
-  </div>
+                                <div className="match-date">
+                                  {formatearFecha(partido.fecha)}
+                                </div>
 
-  {/* EQUIPO LOCAL */}
+                                {/* EQUIPO LOCAL */}
 
-  <div className="team team-local">
+                                <div className="team team-local">
 
-    <span className="team-name">
-      {local?.nombre || 'Equipo local'}
-    </span>
+                                  <span className="team-name">
+                                    {local?.nombre || 'Equipo local'}
+                                  </span>
 
-    <span className="score">
-      {partido.jugado
-        ? partido.goles_local
-        : '-'}
-    </span>
+                                  <span className="score">
+                                    {partido.jugado
+                                      ? partido.goles_local
+                                      : '-'}
+                                  </span>
 
-  </div>
+                                </div>
 
-  {/* ESTADO */}
+                                {/* ESTADO */}
 
-  <div className="match-status">
+                                <div className="match-status">
 
-    <span>
-      {partido.jugado
-        ? 'FINAL'
-        : 'VS'}
-    </span>
+                                  <span>
+                                    {partido.jugado
+                                      ? 'FINAL'
+                                      : 'VS'}
+                                  </span>
 
-  </div>
+                                </div>
 
-  {/* EQUIPO VISITANTE */}
+                                {/* EQUIPO VISITANTE */}
 
-  <div className="team team-visitor">
+                                <div className="team team-visitor">
 
-    <span className="score">
-      {partido.jugado
-        ? partido.goles_visitante
-        : '-'}
-    </span>
+                                  <span className="score">
+                                    {partido.jugado
+                                      ? partido.goles_visitante
+                                      : '-'}
+                                  </span>
 
-    <span className="team-name">
-      {visitante?.nombre || 'Equipo visitante'}
-    </span>
+                                  <span className="team-name">
+                                    {visitante?.nombre || 'Equipo visitante'}
+                                  </span>
 
-  </div>
+                                </div>
 
-</article>
+                              </article>
 
 
                             )

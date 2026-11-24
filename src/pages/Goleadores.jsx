@@ -91,9 +91,9 @@ function Goleadores() {
       // 6. Crear mapas para encontrar rápidamente
       const jugadoresMap = {}
 
-      ;(jugadoresData || []).forEach(jugador => {
-        jugadoresMap[jugador.id] = jugador
-      })
+        ; (jugadoresData || []).forEach(jugador => {
+          jugadoresMap[jugador.id] = jugador
+        })
 
       const equiposMap = {}
 
@@ -254,10 +254,10 @@ function Goleadores() {
                     {jugador.posicion === 1
                       ? '🥇'
                       : jugador.posicion === 2
-                      ? '🥈'
-                      : jugador.posicion === 3
-                      ? '🥉'
-                      : jugador.posicion}
+                        ? '🥈'
+                        : jugador.posicion === 3
+                          ? '🥉'
+                          : jugador.posicion}
 
                   </div>
 

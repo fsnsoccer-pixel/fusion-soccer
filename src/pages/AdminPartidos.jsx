@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import logosEquipos from '../logosEquipos'
+
+
 
 function AdminPartidos() {
   const [partidos, setPartidos] = useState([])
   const [equipos, setEquipos] = useState([])
   const [jugadores, setJugadores] = useState([])
 
-  const [jornadaAbierta, setJornadaAbierta] = useState(1)
+  const [jornadaAbierta, setJornadaAbierta] = useState(null)
   const [partidoEditando, setPartidoEditando] = useState(null)
   const [jornadaAgregando, setJornadaAgregando] = useState(null)
   const [partidoEstadisticas, setPartidoEstadisticas] = useState(null)
@@ -30,6 +32,16 @@ function AdminPartidos() {
   const [error, setError] = useState('')
   const [mensaje, setMensaje] = useState('')
 
+  const [partidosFases, setPartidosFases] = useState([])
+  const [fechasSemifinales, setFechasSemifinales] = useState({
+    ida1: '',
+    vuelta1: '',
+    ida2: '',
+    vuelta2: ''
+  })
+  const [fechaFinal, setFechaFinal] = useState('')
+  const [generandoFases, setGenerandoFases] = useState(false)
+
   useEffect(() => {
     cargarDatos()
   }, [])
@@ -42,14 +54,16 @@ function AdminPartidos() {
     setLoading(true)
     setError('')
 
-    const [
-      { data: partidosData, error: partidosError },
-      { data: equiposData, error: equiposError },
-      { data: jugadoresData, error: jugadoresError }
-    ] = await Promise.all([
-      supabase
-        .from('partidos')
-        .select(`
+    try {
+      const [
+        { data: partidosData, error: partidosError },
+        { data: equiposData, error: equiposError },
+        { data: jugadoresData, error: jugadoresError },
+        { data: fasesData, error: fasesError }
+      ] = await Promise.all([
+        supabase
+          .from('partidos')
+          .select(`
           id,
           fecha,
           jornada,
@@ -57,51 +71,50 @@ function AdminPartidos() {
           visitante_id,
           goles_local,
           goles_visitante,
-          jugado
+          jugado,
+          fase,
+          numero_partido
         `)
-        .order('jornada', { ascending: true })
-        .order('fecha', { ascending: true })
-        .order('id', { ascending: true }),
+          .or('fase.eq.REGULAR,fase.is.null')
+          .order('jornada', { ascending: true })
+          .order('fecha', { ascending: true })
+          .order('id', { ascending: true }),
 
-      supabase
-        .from('equipos')
-        .select('id, nombre')
-        .eq('activo', true)
-        .order('nombre', { ascending: true }),
+        supabase
+          .from('equipos')
+          .select('id, nombre')
+          .eq('activo', true)
+          .order('nombre', { ascending: true }),
 
-      supabase
-        .from('jugadores')
-        .select('id, nombre, equipo_id')
-        .eq('activo', true)
-        .order('nombre', { ascending: true })
-    ])
+        supabase
+          .from('jugadores')
+          .select('id, nombre, equipo_id')
+          .eq('activo', true)
+          .order('nombre', { ascending: true }),
 
-    if (partidosError) {
-      console.error('ERROR PARTIDOS:', partidosError)
-      setError('No se pudieron cargar los partidos.')
+        supabase
+          .from('partidos')
+          .select('*')
+          .in('fase', ['SEMIFINAL', 'FINAL'])
+          .order('numero_partido', { ascending: true })
+      ])
+
+      if (partidosError) throw partidosError
+      if (equiposError) throw equiposError
+      if (jugadoresError) throw jugadoresError
+      if (fasesError) throw fasesError
+
+      setPartidos(partidosData || [])
+      setEquipos(equiposData || [])
+      setJugadores(jugadoresData || [])
+      setPartidosFases(fasesData || [])
+
+    } catch (err) {
+      console.error('ERROR CARGANDO DATOS:', err)
+      setError(`No se pudieron cargar los datos: ${err.message}`)
+    } finally {
       setLoading(false)
-      return
     }
-
-    if (equiposError) {
-      console.error('ERROR EQUIPOS:', equiposError)
-      setError('No se pudieron cargar los equipos.')
-      setLoading(false)
-      return
-    }
-
-    if (jugadoresError) {
-      console.error('ERROR JUGADORES:', jugadoresError)
-      setError('No se pudieron cargar los jugadores.')
-      setLoading(false)
-      return
-    }
-
-    setPartidos(partidosData || [])
-    setEquipos(equiposData || [])
-    setJugadores(jugadoresData || [])
-
-    setLoading(false)
   }
 
   // =========================================================
@@ -109,10 +122,22 @@ function AdminPartidos() {
   // =========================================================
 
   function obtenerLogoEquipo(equipo) {
-  if (!equipo) return null
+    if (!equipo?.nombre) return null
 
-  return logosEquipos[equipo.nombre] || null
-}
+    const nombre = equipo.nombre.trim()
+
+    // Buscar coincidencia exacta
+    if (logosEquipos[nombre]) {
+      return logosEquipos[nombre]
+    }
+
+    // Buscar ignorando mayúsculas y minúsculas
+    const clave = Object.keys(logosEquipos).find(
+      key => key.trim().toLowerCase() === nombre.toLowerCase()
+    )
+
+    return clave ? logosEquipos[clave] : null
+  }
 
   function obtenerEquipo(id) {
     return equipos.find(
@@ -215,21 +240,11 @@ function AdminPartidos() {
 
     if (
       !Number.isInteger(local) ||
-      !Number.isInteger(visitante)
-    ) {
-      setError(
-        'Los goles deben ser números enteros.'
-      )
-      return
-    }
-
-    if (
+      !Number.isInteger(visitante) ||
       local < 0 ||
       visitante < 0
     ) {
-      setError(
-        'Los goles no pueden ser negativos.'
-      )
+      setError('Los goles deben ser números enteros y no negativos.')
       return
     }
 
@@ -237,49 +252,52 @@ function AdminPartidos() {
     setError('')
     setMensaje('')
 
-    const { error } = await supabase
-      .from('partidos')
-      .update({
-        goles_local: local,
-        goles_visitante: visitante,
-        jugado: true
-      })
-      .eq('id', partido.id)
+    try {
+      const { data, error } = await supabase
+        .from('partidos')
+        .update({
+          goles_local: local,
+          goles_visitante: visitante,
+          jugado: true
+        })
+        .eq('id', partido.id)
+        .select()
+        .single()
 
-    if (error) {
-      console.error(
-        'ERROR GUARDANDO RESULTADO:',
-        error
+      if (error) throw error
+
+      // Actualizar partidos de fase regular
+      setPartidos(prev =>
+        prev.map(item =>
+          item.id === partido.id
+            ? { ...item, ...data }
+            : item
+        )
       )
 
-      setError(
-        'No se pudo guardar el resultado.'
+      // Actualizar semifinales y final
+      setPartidosFases(prev =>
+        prev.map(item =>
+          item.id === partido.id
+            ? { ...item, ...data }
+            : item
+        )
       )
 
+      setPartidoEditando(null)
+      setGolesLocal(0)
+      setGolesVisitante(0)
+
+      setMensaje(
+        `✅ Resultado guardado: ${local} - ${visitante}`
+      )
+
+    } catch (err) {
+      console.error('ERROR GUARDANDO RESULTADO:', err)
+      setError(`No se pudo guardar el resultado: ${err.message}`)
+    } finally {
       setGuardando(false)
-      return
     }
-
-    setPartidos(prev =>
-      prev.map(item =>
-        item.id === partido.id
-          ? {
-              ...item,
-              goles_local: local,
-              goles_visitante: visitante,
-              jugado: true
-            }
-          : item
-      )
-    )
-
-    setMensaje(
-      `Resultado guardado: ${local} - ${visitante}`
-    )
-
-    setPartidoEditando(null)
-
-    setGuardando(false)
   }
 
   // =========================================================
@@ -613,7 +631,7 @@ function AdminPartidos() {
       ) {
         const estadisticas =
           estadisticasSeleccionadas[
-            jugador.id
+          jugador.id
           ]
 
         const goles =
@@ -639,7 +657,7 @@ function AdminPartidos() {
         }
       }
 
-      
+
       // ---------------------------------------
       // Eliminar goles anteriores
       // ---------------------------------------
@@ -710,7 +728,7 @@ function AdminPartidos() {
       ) {
         const estadisticas =
           estadisticasSeleccionadas[
-            jugador.id
+          jugador.id
           ]
 
         const amarillas =
@@ -741,35 +759,35 @@ function AdminPartidos() {
       }
 
       // ---------------------------------------
-// Guardar tarjetas
-// ---------------------------------------
+      // Guardar tarjetas
+      // ---------------------------------------
 
-if (registrosTarjetas.length > 0) {
-  const {
-    error: guardarTarjetasError
-  } = await supabase
-    .from('estadisticas_partido')
-    .upsert(
-      registrosTarjetas,
-      {
-        onConflict: 'partido_id,jugador_id'
+      if (registrosTarjetas.length > 0) {
+        const {
+          error: guardarTarjetasError
+        } = await supabase
+          .from('estadisticas_partido')
+          .upsert(
+            registrosTarjetas,
+            {
+              onConflict: 'partido_id,jugador_id'
+            }
+          )
+
+        if (guardarTarjetasError) {
+          console.error(
+            'ERROR GUARDANDO TARJETAS:',
+            guardarTarjetasError
+          )
+
+          setError(
+            `No se pudieron guardar las tarjetas: ${guardarTarjetasError.message}`
+          )
+
+          setGuardando(false)
+          return
+        }
       }
-    )
-
-  if (guardarTarjetasError) {
-    console.error(
-      'ERROR GUARDANDO TARJETAS:',
-      guardarTarjetasError
-    )
-
-    setError(
-      `No se pudieron guardar las tarjetas: ${guardarTarjetasError.message}`
-    )
-
-    setGuardando(false)
-    return
-  }
-}
 
 
       // ---------------------------------------
@@ -816,6 +834,249 @@ if (registrosTarjetas.length > 0) {
   }
 
   // =========================================================
+  // CLASIFICACIÓN
+  // =========================================================
+
+  function calcularClasificacion() {
+    const tabla = equipos.map(equipo => ({
+      ...equipo,
+      pj: 0,
+      pts: 0,
+      gf: 0,
+      gc: 0,
+      dg: 0
+    }))
+
+    partidos
+      .filter(p => p.jugado)
+      .forEach(partido => {
+        const local = tabla.find(
+          e => e.id === partido.local_id
+        )
+
+        const visitante = tabla.find(
+          e => e.id === partido.visitante_id
+        )
+
+        if (!local || !visitante) return
+
+        const gl = Number(partido.goles_local || 0)
+        const gv = Number(partido.goles_visitante || 0)
+
+        local.pj++
+        visitante.pj++
+
+        local.gf += gl
+        local.gc += gv
+
+        visitante.gf += gv
+        visitante.gc += gl
+
+        if (gl > gv) {
+          local.pts += 3
+        } else if (gl < gv) {
+          visitante.pts += 3
+        } else {
+          local.pts++
+          visitante.pts++
+        }
+      })
+
+    return tabla
+      .map(e => ({
+        ...e,
+        dg: e.gf - e.gc
+      }))
+      .sort((a, b) =>
+        b.pts - a.pts ||
+        b.dg - a.dg ||
+        b.gf - a.gf
+      )
+  }
+
+  // =========================================================
+  // GENERAR SEMIFINALES
+  // =========================================================
+
+  async function generarSemifinales() {
+    const regulares = partidos.filter(
+      p => p.jugado
+    )
+
+    if (regulares.length !== 30) {
+      setError(
+        'Debes completar los 30 partidos de fase regular.'
+      )
+      return
+    }
+
+    if (partidosFases.some(p => p.fase === 'SEMIFINAL')) {
+      setError('Las semifinales ya están generadas.')
+      return
+    }
+
+    const fechas = Object.values(fechasSemifinales)
+
+    if (fechas.some(fecha => !fecha)) {
+      setError('Debes seleccionar las cuatro fechas.')
+      return
+    }
+
+    const clasificacion = calcularClasificacion()
+
+    const primero = clasificacion[0]
+    const segundo = clasificacion[1]
+    const tercero = clasificacion[2]
+    const cuarto = clasificacion[3]
+
+    if (!cuarto) {
+      setError('No hay suficientes equipos clasificados.')
+      return
+    }
+
+    setGenerandoFases(true)
+    setError('')
+    setMensaje('')
+
+    const registros = [
+      {
+        fase: 'SEMIFINAL',
+        numero_partido: 1,
+        fecha: fechasSemifinales.ida1,
+        local_id: primero.id,
+        visitante_id: cuarto.id
+      },
+      {
+        fase: 'SEMIFINAL',
+        numero_partido: 2,
+        fecha: fechasSemifinales.vuelta1,
+        local_id: cuarto.id,
+        visitante_id: primero.id
+      },
+      {
+        fase: 'SEMIFINAL',
+        numero_partido: 3,
+        fecha: fechasSemifinales.ida2,
+        local_id: segundo.id,
+        visitante_id: tercero.id
+      },
+      {
+        fase: 'SEMIFINAL',
+        numero_partido: 4,
+        fecha: fechasSemifinales.vuelta2,
+        local_id: tercero.id,
+        visitante_id: segundo.id
+      }
+    ].map(p => ({
+      ...p,
+      goles_local: 0,
+      goles_visitante: 0,
+      jugado: false
+    }))
+
+    const { data, error } = await supabase
+      .from('partidos')
+      .insert(registros)
+      .select()
+
+    if (error) {
+      console.error(error)
+      setError(`Error generando semifinales: ${error.message}`)
+    } else {
+      setPartidosFases(prev => [...prev, ...data])
+      setMensaje('Semifinales generadas correctamente.')
+    }
+
+    setGenerandoFases(false)
+  }
+
+  // =========================================================
+  // GENERAR FINAL
+  // =========================================================
+
+  async function generarFinal() {
+    const semifinales = partidosFases
+      .filter(p => p.fase === 'SEMIFINAL')
+
+    if (
+      semifinales.length !== 4 ||
+      semifinales.some(p => !p.jugado)
+    ) {
+      setError('Debes completar las cuatro semifinales.')
+      return
+    }
+
+    if (!fechaFinal) {
+      setError('Selecciona la fecha de la final.')
+      return
+    }
+
+    // Los ganadores se determinan por el marcador global
+    const ganador = (ida, vuelta) => {
+      const globalLocal =
+        Number(ida.goles_local) +
+        Number(vuelta.goles_visitante)
+
+      const globalVisitante =
+        Number(ida.goles_visitante) +
+        Number(vuelta.goles_local)
+
+      if (globalLocal === globalVisitante) {
+        return null
+      }
+
+      return globalLocal > globalVisitante
+        ? ida.local_id
+        : ida.visitante_id
+    }
+
+    const ganador1 = ganador(
+      semifinales.find(p => p.numero_partido === 1),
+      semifinales.find(p => p.numero_partido === 2)
+    )
+
+    const ganador2 = ganador(
+      semifinales.find(p => p.numero_partido === 3),
+      semifinales.find(p => p.numero_partido === 4)
+    )
+
+    if (!ganador1 || !ganador2) {
+      setError(
+        'Hay una semifinal empatada en el global. Debes resolver la clasificación antes de generar la final.'
+      )
+      return
+    }
+
+    setGuardando(true)
+    setError('')
+
+    const { data, error } = await supabase
+      .from('partidos')
+      .insert({
+        fase: 'FINAL',
+        numero_partido: 5,
+        fecha: fechaFinal,
+        local_id: ganador1,
+        visitante_id: ganador2,
+        goles_local: 0,
+        goles_visitante: 0,
+        jugado: false
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error(error)
+      setError(`Error generando final: ${error.message}`)
+    } else {
+      setPartidosFases(prev => [...prev, data])
+      setMensaje('Gran final generada correctamente.')
+    }
+
+    setGuardando(false)
+  }
+
+  // =========================================================
   // RENDER
   // =========================================================
 
@@ -834,7 +1095,7 @@ if (registrosTarjetas.length > 0) {
         <h1>⚽ Partidos</h1>
 
         <p>
-          Administrar las 10 jornadas
+          Administrar Partidos
           del campeonato
         </p>
 
@@ -872,6 +1133,405 @@ if (registrosTarjetas.length > 0) {
 
           <div className="jornadas-admin">
 
+
+            {/* =====================================================
+    FASES FINALES
+===================================================== */}
+
+            <section className="jornada-admin jornada-abierta">
+
+              <div className="jornada-admin-header">
+                <div className="jornada-admin-title">
+                  <span className="jornada-icon">🏆</span>
+                  <div>
+                    <strong>Fases finales</strong>
+                    <span>Semifinales y gran final</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="jornada-admin-content">
+
+                <h3>Clasificación</h3>
+
+                {partidos.filter(p => p.jugado).length === 30 && (
+                  calcularClasificacion().slice(0, 4).map((equipo, index) => (
+                    <div
+                      key={equipo.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: '100%',
+                        gap: '10px',
+                        padding: '10px 12px',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <span style={{ width: '20px', flexShrink: 0 }}>
+                        {index + 1}.
+                      </span>
+
+                      <img
+                        src={obtenerLogoEquipo(equipo)}
+                        alt={equipo.nombre}
+                        style={{
+                          width: '34px',
+                          height: '34px',
+                          objectFit: 'contain',
+                          flexShrink: 0
+                        }}
+                      />
+
+                      <strong style={{
+                        flex: 1,
+                        textAlign: 'left',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {equipo.nombre}
+                      </strong>
+
+                      <span style={{
+                        whiteSpace: 'nowrap',
+                        marginLeft: 'auto'
+                      }}>
+                        {equipo.pts} pts
+                      </span>
+                    </div>
+                  ))
+                )}
+
+                {!partidosFases.some(p => p.fase === 'SEMIFINAL') && (
+                  <div className="nuevo-partido-form">
+
+                    <h3>Programar semifinales</h3>
+
+                    {[
+                      ['ida1', 'Semifinal 1 - Ida'],
+                      ['vuelta1', 'Semifinal 1 - Vuelta'],
+                      ['ida2', 'Semifinal 2 - Ida'],
+                      ['vuelta2', 'Semifinal 2 - Vuelta']
+                    ].map(([campo, titulo]) => (
+                      <div key={campo}>
+                        <label>{titulo}</label>
+                        <input
+                          type="date"
+                          value={fechasSemifinales[campo]}
+                          onChange={e =>
+                            setFechasSemifinales(prev => ({
+                              ...prev,
+                              [campo]: e.target.value
+                            }))
+                          }
+                        />
+                      </div>
+                    ))}
+
+                    <button
+                      className="admin-primary-button"
+                      onClick={generarSemifinales}
+                      disabled={generandoFases}
+                    >
+                      {generandoFases ? 'Generando...' : 'Generar semifinales'}
+                    </button>
+
+                  </div>
+                )}
+
+                {partidosFases.map(partido => {
+
+                  const local = obtenerEquipo(partido.local_id)
+                  const visitante = obtenerEquipo(partido.visitante_id)
+
+                  const editando = partidoEditando === partido.id
+
+                  const mostrandoEstadisticas =
+                    partidoEstadisticas?.id === partido.id
+
+                  return (
+                    <div className="admin-partido-card" key={partido.id}>
+
+                      <h3>
+                        {partido.fase === 'FINAL'
+                          ? '🏆 GRAN FINAL'
+                          : `⚽ SEMIFINAL ${Math.ceil(partido.numero_partido / 2)} - ${partido.numero_partido % 2 === 1 ? 'IDA' : 'VUELTA'}`}
+                      </h3>
+
+                      <div className="admin-partido-fecha">
+                        📅 {formatearFecha(partido.fecha)}
+                      </div>
+
+                      {!editando && !mostrandoEstadisticas && (
+                        <>
+                          <div className="admin-partido-equipos">
+
+                            <div className="admin-equipo admin-local">
+
+                              {obtenerLogoEquipo(local) && (
+                                <img
+                                  src={obtenerLogoEquipo(local)}
+                                  alt={local?.nombre || 'Equipo'}
+                                  className="admin-equipo-logo"
+                                />
+                              )}
+
+                              <span className="admin-equipo-nombre">
+                                {local?.nombre || 'Equipo'}
+                              </span>
+
+                            </div>
+
+                            <div className="admin-resultado">
+                              <span>{partido.goles_local ?? 0}</span>
+                              <small>-</small>
+                              <span>{partido.goles_visitante ?? 0}</span>
+                            </div>
+
+                            <div className="admin-equipo admin-visitante">
+
+                              {obtenerLogoEquipo(visitante) && (
+                                <img
+                                  src={obtenerLogoEquipo(visitante)}
+                                  alt={visitante?.nombre || 'Equipo'}
+                                  className="admin-equipo-logo"
+                                />
+                              )}
+
+                              <span className="admin-equipo-nombre">
+                                {visitante?.nombre || 'Equipo'}
+                              </span>
+
+                            </div>
+
+                          </div>
+
+                          <div className="admin-partido-actions">
+
+                            <button
+                              className="admin-result-button"
+                              onClick={() => abrirResultado(partido)}
+                            >
+                              📝 Registrar resultado
+                            </button>
+
+                            <button
+                              className="admin-goals-button"
+                              onClick={() => abrirEstadisticas(partido)}
+                            >
+                              ⚽ Gestionar estadísticas
+                            </button>
+
+                          </div>
+                        </>
+                      )}
+
+                      {editando && (
+                        <div className="resultado-editor">
+
+                          <div className="resultado-inputs">
+
+                            <div className="resultado-equipo">
+                              <label>{local?.nombre}</label>
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={golesLocal}
+                                onChange={e => setGolesLocal(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="resultado-guion">-</div>
+
+                            <div className="resultado-equipo">
+                              <label>{visitante?.nombre}</label>
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={golesVisitante}
+                                onChange={e => setGolesVisitante(e.target.value)}
+                              />
+                            </div>
+
+                          </div>
+
+                          <div className="resultado-actions">
+                            <button
+                              className="admin-primary-button"
+                              onClick={() => guardarResultado(partido)}
+                              disabled={guardando}
+                            >
+                              Guardar resultado
+                            </button>
+
+                            <button
+                              className="admin-secondary-button"
+                              onClick={cancelarResultado}
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+
+                        </div>
+                      )}
+
+                      {/* MISMO EDITOR DE ESTADÍSTICAS */}
+
+                      {mostrandoEstadisticas && (
+                        <div className="estadisticas-editor">
+
+                          <h3>⚽ Estadísticas del partido</h3>
+
+                          <p>
+                            {local?.nombre} - {visitante?.nombre}
+                          </p>
+
+                          <div className="estadisticas-tabla">
+
+                            <div className="estadisticas-fila estadisticas-cabecera">
+                              <div>Jugador</div>
+                              <div>⚽</div>
+                              <div>🟨</div>
+                              <div>🟥</div>
+                            </div>
+
+                            {[local, visitante].map(equipo => (
+                              <Fragment key={equipo?.id}>
+
+                                <div className="estadisticas-equipo-titulo">
+                                  {equipo?.nombre}
+                                </div>
+
+                                {obtenerJugadoresEquipo(equipo?.id).map(jugador => {
+
+                                  const stats =
+                                    estadisticasSeleccionadas[jugador.id] || {
+                                      goles: 0,
+                                      amarillas: 0,
+                                      rojas: 0
+                                    }
+
+                                  return (
+                                    <div className="estadisticas-fila" key={jugador.id}>
+
+                                      <div className="estadisticas-jugador">
+                                        {jugador.nombre}
+                                      </div>
+
+                                      {['goles', 'amarillas', 'rojas'].map(tipo => (
+                                        <div className="estadistica-control" key={tipo}>
+
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              cambiarEstadistica(
+                                                jugador.id,
+                                                tipo,
+                                                stats[tipo] - 1
+                                              )
+                                            }
+                                          >
+                                            −
+                                          </button>
+
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            value={stats[tipo]}
+                                            onChange={e =>
+                                              cambiarEstadistica(
+                                                jugador.id,
+                                                tipo,
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              cambiarEstadistica(
+                                                jugador.id,
+                                                tipo,
+                                                stats[tipo] + 1
+                                              )
+                                            }
+                                          >
+                                            +
+                                          </button>
+
+                                        </div>
+                                      ))}
+
+                                    </div>
+                                  )
+                                })}
+
+                              </Fragment>
+                            ))}
+
+                          </div>
+
+                          <div className="resultado-actions">
+
+                            <button
+                              className="admin-primary-button"
+                              onClick={() => guardarEstadisticas(partido)}
+                              disabled={guardando}
+                            >
+                              Guardar estadísticas
+                            </button>
+
+                            <button
+                              className="admin-secondary-button"
+                              onClick={cerrarEstadisticas}
+                              disabled={guardando}
+                            >
+                              Cancelar
+                            </button>
+
+                          </div>
+
+                        </div>
+                      )}
+
+                    </div>
+                  )
+                })}
+
+                {partidosFases.filter(p => p.fase === 'SEMIFINAL').length === 4 &&
+                  partidosFases
+                    .filter(p => p.fase === 'SEMIFINAL')
+                    .every(p => p.jugado) &&
+                  !partidosFases.some(p => p.fase === 'FINAL') && (
+
+                    <div className="nuevo-partido-form">
+
+                      <h3>🏆 Programar gran final</h3>
+
+                      <label>Fecha de la final</label>
+
+                      <input
+                        type="date"
+                        value={fechaFinal}
+                        onChange={e => setFechaFinal(e.target.value)}
+                      />
+
+                      <button
+                        className="admin-primary-button"
+                        onClick={generarFinal}
+                        disabled={guardando}
+                      >
+                        Generar final
+                      </button>
+
+                    </div>
+                  )}
+
+              </div>
+
+            </section>
+
             {Array.from(
               { length: 10 },
               (_, index) =>
@@ -898,11 +1558,10 @@ if (registrosTarjetas.length > 0) {
               return (
 
                 <section
-                  className={`jornada-admin ${
-                    abierta
+                  className={`jornada-admin ${abierta
                       ? 'jornada-abierta'
                       : ''
-                  }`}
+                    }`}
                   key={jornada}
                 >
 
@@ -959,13 +1618,13 @@ if (registrosTarjetas.length > 0) {
                       {partidosJornada.length ===
                         0 && (
 
-                        <div className="sin-partidos">
-                          No hay partidos
-                          registrados para
-                          esta jornada.
-                        </div>
+                          <div className="sin-partidos">
+                            No hay partidos
+                            registrados para
+                            esta jornada.
+                          </div>
 
-                      )}
+                        )}
 
                       {/* PARTIDOS */}
 
@@ -1013,97 +1672,97 @@ if (registrosTarjetas.length > 0) {
                               {!editando &&
                                 !mostrandoEstadisticas && (
 
-                                <>
+                                  <>
 
-                                  <div className="admin-partido-equipos">
+                                    <div className="admin-partido-equipos">
 
-                                    <div className="admin-equipo admin-local">
+                                      <div className="admin-equipo admin-local">
 
-  {obtenerLogoEquipo(local) && (
-    <img
-      src={obtenerLogoEquipo(local)}
-      alt={local?.nombre || 'Equipo'}
-      className="admin-equipo-logo"
-    />
-  )}
+                                        {obtenerLogoEquipo(local) && (
+                                          <img
+                                            src={obtenerLogoEquipo(local)}
+                                            alt={local?.nombre || 'Equipo'}
+                                            className="admin-equipo-logo"
+                                          />
+                                        )}
 
-  <span className="admin-equipo-nombre">
-    {local?.nombre || 'Equipo'}
-  </span>
+                                        <span className="admin-equipo-nombre">
+                                          {local?.nombre || 'Equipo'}
+                                        </span>
 
-</div>
+                                      </div>
 
 
 
-                                    <div className="admin-resultado">
+                                      <div className="admin-resultado">
 
-                                      <span>
-                                        {
-                                          partido.goles_local
-                                        }
-                                      </span>
+                                        <span>
+                                          {
+                                            partido.goles_local
+                                          }
+                                        </span>
 
-                                      <small>
-                                        -
-                                      </small>
+                                        <small>
+                                          -
+                                        </small>
 
-                                      <span>
-                                        {
-                                          partido.goles_visitante
-                                        }
-                                      </span>
+                                        <span>
+                                          {
+                                            partido.goles_visitante
+                                          }
+                                        </span>
+
+                                      </div>
+
+                                      <div className="admin-equipo admin-visitante">
+
+                                        {obtenerLogoEquipo(visitante) && (
+                                          <img
+                                            src={obtenerLogoEquipo(visitante)}
+                                            alt={visitante?.nombre || 'Equipo'}
+                                            className="admin-equipo-logo"
+                                          />
+                                        )}
+
+                                        <span className="admin-equipo-nombre">
+                                          {visitante?.nombre || 'Equipo'}
+                                        </span>
+
+                                      </div>
+
+
 
                                     </div>
 
-<div className="admin-equipo admin-visitante">
+                                    <div className="admin-partido-actions">
 
-  {obtenerLogoEquipo(visitante) && (
-    <img
-      src={obtenerLogoEquipo(visitante)}
-      alt={visitante?.nombre || 'Equipo'}
-      className="admin-equipo-logo"
-    />
-  )}
+                                      <button
+                                        className="admin-result-button"
+                                        onClick={() =>
+                                          abrirResultado(
+                                            partido
+                                          )
+                                        }
+                                      >
+                                        📝 Registrar resultado
+                                      </button>
 
-  <span className="admin-equipo-nombre">
-    {visitante?.nombre || 'Equipo'}
-  </span>
+                                      <button
+                                        className="admin-goals-button"
+                                        onClick={() =>
+                                          abrirEstadisticas(
+                                            partido
+                                          )
+                                        }
+                                      >
+                                        ⚽ Gestionar estadísticas
+                                      </button>
 
-</div>
+                                    </div>
 
+                                  </>
 
-
-                                  </div>
-
-                                  <div className="admin-partido-actions">
-
-                                    <button
-                                      className="admin-result-button"
-                                      onClick={() =>
-                                        abrirResultado(
-                                          partido
-                                        )
-                                      }
-                                    >
-                                      📝 Registrar resultado
-                                    </button>
-
-                                    <button
-                                      className="admin-goals-button"
-                                      onClick={() =>
-                                        abrirEstadisticas(
-                                          partido
-                                        )
-                                      }
-                                    >
-                                      ⚽ Gestionar estadísticas
-                                    </button>
-
-                                  </div>
-
-                                </>
-
-                              )}
+                                )}
 
                               {/* EDITAR RESULTADO */}
 
@@ -1283,7 +1942,7 @@ if (registrosTarjetas.length > 0) {
 
                                         const estadisticas =
                                           estadisticasSeleccionadas[
-                                            jugador.id
+                                          jugador.id
                                           ] || {
                                             goles: 0,
                                             amarillas: 0,
@@ -1316,7 +1975,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'goles',
                                                     estadisticas.goles -
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1346,7 +2005,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'goles',
                                                     estadisticas.goles +
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1366,7 +2025,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'amarillas',
                                                     estadisticas.amarillas -
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1396,7 +2055,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'amarillas',
                                                     estadisticas.amarillas +
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1416,7 +2075,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'rojas',
                                                     estadisticas.rojas -
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1446,7 +2105,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'rojas',
                                                     estadisticas.rojas +
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1477,7 +2136,7 @@ if (registrosTarjetas.length > 0) {
 
                                         const estadisticas =
                                           estadisticasSeleccionadas[
-                                            jugador.id
+                                          jugador.id
                                           ] || {
                                             goles: 0,
                                             amarillas: 0,
@@ -1510,7 +2169,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'goles',
                                                     estadisticas.goles -
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1540,7 +2199,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'goles',
                                                     estadisticas.goles +
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1560,7 +2219,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'amarillas',
                                                     estadisticas.amarillas -
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1590,7 +2249,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'amarillas',
                                                     estadisticas.amarillas +
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1610,7 +2269,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'rojas',
                                                     estadisticas.rojas -
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1640,7 +2299,7 @@ if (registrosTarjetas.length > 0) {
                                                     jugador.id,
                                                     'rojas',
                                                     estadisticas.rojas +
-                                                      1
+                                                    1
                                                   )
                                                 }
                                               >
@@ -1706,18 +2365,18 @@ if (registrosTarjetas.length > 0) {
                       {!completa &&
                         !agregando && (
 
-                        <button
-                          className="admin-add-match-button"
-                          onClick={() =>
-                            abrirAgregarPartido(
-                              jornada
-                            )
-                          }
-                        >
-                          ➕ Agregar partido
-                        </button>
+                          <button
+                            className="admin-add-match-button"
+                            onClick={() =>
+                              abrirAgregarPartido(
+                                jornada
+                              )
+                            }
+                          >
+                            ➕ Agregar partido
+                          </button>
 
-                      )}
+                        )}
 
                       {/* FORMULARIO NUEVO PARTIDO */}
 
@@ -1876,6 +2535,8 @@ if (registrosTarjetas.length > 0) {
             })}
 
           </div>
+
+
 
         )}
 

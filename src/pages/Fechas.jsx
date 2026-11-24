@@ -1,9 +1,8 @@
+
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import logosEquipos from '../logosEquipos'
-
-
 
 function Fechas() {
   const [partidos, setPartidos] = useState([])
@@ -11,6 +10,7 @@ function Fechas() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [jornadaAbierta, setJornadaAbierta] = useState(null)
+  const [finalesAbiertas, setFinalesAbiertas] = useState(false)
 
   useEffect(() => {
     cargarCalendario()
@@ -70,18 +70,166 @@ function Fechas() {
     })
   }
 
-  // Agrupar partidos por jornada
-  const partidosPorJornada = partidos.reduce((grupos, partido) => {
-    const jornada = partido.jornada
+  // Separar jornadas normales y fases finales
+  const partidosJornadas = partidos.filter(
+    partido =>
+      partido.jornada !== null &&
+      partido.jornada >= 1 &&
+      partido.jornada <= 10
+  )
 
-    if (!grupos[jornada]) {
-      grupos[jornada] = []
+  const partidosFinales = partidos.filter(
+    partido => partido.jornada === null
+  )
+
+  // Agrupar jornadas
+  const partidosPorJornada = partidosJornadas.reduce(
+    (grupos, partido) => {
+      const jornada = partido.jornada
+
+      if (!grupos[jornada]) {
+        grupos[jornada] = []
+      }
+
+      grupos[jornada].push(partido)
+
+      return grupos
+    },
+    {}
+  )
+
+  // Verificar si las 10 jornadas están completas
+  const diezJornadasCompletas = Array.from(
+    { length: 10 },
+    (_, index) => index + 1
+  ).every(jornada => {
+    const partidosJornada = partidosPorJornada[jornada]
+
+    return (
+      partidosJornada &&
+      partidosJornada.length > 0 &&
+      partidosJornada.every(partido => partido.jugado === true)
+    )
+  })
+
+  // Identificar semifinales y final
+  function identificarFase(partido, index) {
+    const texto = [
+      partido.nombre,
+      partido.fase,
+      partido.tipo,
+      partido.descripcion
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    // Primero identificar semifinales
+    if (texto.includes('semifinal')) {
+      return 'Semifinal'
     }
 
-    grupos[jornada].push(partido)
+    // Después identificar la gran final
+    if (
+      texto.includes('gran final') ||
+      texto.includes('final')
+    ) {
+      return 'Final'
+    }
 
-    return grupos
-  }, {})
+    // Respaldo si no existe identificación
+    return index < 2 ? 'Semifinal' : 'Final'
+  }
+
+  // Separar semifinales y gran final
+  const semifinales = partidosFinales.filter(partido => {
+    const texto = [
+      partido.nombre,
+      partido.fase,
+      partido.tipo,
+      partido.descripcion
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return texto.includes('semifinal')
+  })
+
+  const finales = partidosFinales.filter(partido => {
+    const texto = [
+      partido.nombre,
+      partido.fase,
+      partido.tipo,
+      partido.descripcion
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return (
+      texto.includes('gran final') ||
+      texto.includes('final')
+    ) && !texto.includes('semifinal')
+  })
+
+  // Componente visual de partido
+  function Partido({ partido }) {
+    const local = obtenerEquipo(partido.local_id)
+    const visitante = obtenerEquipo(partido.visitante_id)
+
+    return (
+      <div className="fecha-match">
+
+        <div className="partido-fecha">
+          {formatearFecha(partido.fecha)}
+        </div>
+
+        <div className="partido-equipos">
+
+          <div className="fecha-team local">
+
+            {local && logosEquipos[local.nombre] && (
+              <img
+                src={logosEquipos[local.nombre]}
+                alt=""
+                className="equipo-icono"
+              />
+            )}
+
+            <span>
+              {local?.nombre || 'Equipo local'}
+            </span>
+
+          </div>
+
+          <div className="fecha-vs">
+            {partido.jugado === true
+              ? `${partido.goles_local} - ${partido.goles_visitante}`
+              : 'VS'}
+          </div>
+
+          <div className="fecha-team visitante">
+
+            {visitante && logosEquipos[visitante.nombre] && (
+              <img
+                src={logosEquipos[visitante.nombre]}
+                alt=""
+                className="equipo-icono"
+              />
+            )}
+
+            <span>
+              {visitante?.nombre || 'Equipo visitante'}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+    )
+  }
 
   return (
     <div className="page">
@@ -102,237 +250,196 @@ function Fechas() {
 
       <main className="page-content">
 
-        {/* CARGANDO */}
-
         {loading && (
           <div className="empty-card">
-
-            <div className="empty-icon">
-              📅
-            </div>
-
-            <h2>
-              Cargando calendario...
-            </h2>
-
-            <p>
-              Estamos consultando las fechas.
-            </p>
-
+            <div className="empty-icon">📅</div>
+            <h2>Cargando calendario...</h2>
+            <p>Estamos consultando las fechas.</p>
           </div>
         )}
-
-        {/* ERROR */}
 
         {!loading && error && (
           <div className="empty-card error-card">
-
-            <div className="empty-icon">
-              ⚠️
-            </div>
-
-            <h2>
-              Ocurrió un problema
-            </h2>
-
-            <p>
-              {error}
-            </p>
-
+            <div className="empty-icon">⚠️</div>
+            <h2>Ocurrió un problema</h2>
+            <p>{error}</p>
           </div>
         )}
-
-        {/* SIN PARTIDOS */}
 
         {!loading &&
           !error &&
           partidos.length === 0 && (
             <div className="empty-card">
-
-              <div className="empty-icon">
-                📅
-              </div>
-
-              <h2>
-                No hay fechas disponibles
-              </h2>
-
-              <p>
-                Todavía no hay partidos registrados.
-              </p>
-
+              <div className="empty-icon">📅</div>
+              <h2>No hay fechas disponibles</h2>
+              <p>Todavía no hay partidos registrados.</p>
             </div>
           )}
 
-        {/* CALENDARIO */}
+        {!loading && !error && partidos.length > 0 && (
 
-        {!loading &&
-          !error &&
-          partidos.length > 0 && (
+          <div className="fechas-acordeon">
 
-            <div className="fechas-acordeon">
+            {/* FASES FINALES */}
 
-              {Object.entries(partidosPorJornada).map(
-                ([jornada, partidosJornada]) => {
+            {partidosFinales.length > 0 && (
 
-                  const abierta =
-                    jornadaAbierta === jornada
+              <section className={`fecha-acordeon fases-finales ${finalesAbiertas ? 'fecha-abierta' : ''
+                }`}>
 
-                  // Contar solamente los partidos jugados
-                  const partidosJugados =
-                    partidosJornada.filter(
-                      partido => partido.jugado === true
-                    ).length
+                <button
+                  type="button"
+                  className="fecha-acordeon-header"
+                  onClick={() =>
+                    setFinalesAbiertas(!finalesAbiertas)
+                  }
+                  aria-expanded={finalesAbiertas}
+                >
 
-                  // La jornada está completa únicamente
-                  // cuando TODOS sus partidos están jugados
-                  const jornadaCompleta =
-                    partidosJornada.length > 0 &&
-                    partidosJugados === partidosJornada.length
+                  <div className="fecha-header-left">
 
-                  return (
-                    <section
-                      className={`fecha-acordeon ${
-                        abierta ? 'fecha-abierta' : ''
-                      }`}
-                      key={jornada}
-                    >
+                    <div className="fecha-chevron">
+                      {finalesAbiertas ? '▴' : '▾'}
+                    </div>
 
-                      {/* CABECERA */}
+                    <div className="fecha-info">
+                      <h2>🏆 Fases finales</h2>
+                      <p>
+                        Semifinales y gran final
+                      </p>
+                    </div>
 
-                      <button
-                        type="button"
-                        className="fecha-acordeon-header"
-                        onClick={() =>
-                          setJornadaAbierta(
-                            abierta ? null : jornada
-                          )
-                        }
-                        aria-expanded={abierta}
-                      >
+                  </div>
 
-                        <div className="fecha-header-left">
+                  {diezJornadasCompletas && (
+                    <div className="fecha-estado">
+                      ✓ Clasificación
+                    </div>
+                  )}
 
-                          <div className="fecha-chevron">
-                            {abierta ? '▴' : '▾'}
-                          </div>
+                </button>
 
-                          <div className="fecha-info">
+                {finalesAbiertas && (
+                  <div className="fecha-acordeon-partidos">
 
-                            <h2>
-                              Jornada {jornada}
-                            </h2>
+                    {/* GRAN FINAL PRIMERO */}
 
-                            <p>
-                              {partidosJugados} de{' '}
-                              {partidosJornada.length} partidos
-                            </p>
-
-                          </div>
-
+                    {finales.length > 0 && (
+                      <>
+                        <div className="fase-titulo">
+                          🏆 GRAN FINAL
                         </div>
 
-                        {/* SOLO APARECE SI ESTÁ COMPLETA */}
+                        {finales.map(partido => (
+                          <Partido
+                            key={partido.id}
+                            partido={partido}
+                          />
+                        ))}
+                      </>
+                    )}
 
-                        {jornadaCompleta && (
-                          <div className="fecha-estado">
-                            ✓ Completa
-                          </div>
-                        )}
+                    {/* SEMIFINALES DESPUÉS */}
 
-                      </button>
+                    {semifinales.length > 0 && (
+                      <>
+                        <div className="fase-titulo">
+                          ⚔️ SEMIFINALES
+                        </div>
 
-                      {/* PARTIDOS */}
+                        {semifinales.map(partido => (
+                          <Partido
+                            key={partido.id}
+                            partido={partido}
+                          />
+                        ))}
+                      </>
+                    )}
 
-                      {abierta && (
-                        <div className="fecha-acordeon-partidos">
+                  </div>
+                )}
+              </section>
+            )}
 
-                          {partidosJornada.map(partido => {
+            {/* JORNADAS NORMALES */}
 
-                            const local =
-                              obtenerEquipo(partido.local_id)
+            {Object.entries(partidosPorJornada)
+              .sort(([a], [b]) => Number(a) - Number(b))
+              .map(([jornada, partidosJornada]) => {
 
-                            const visitante =
-                              obtenerEquipo(
-                                partido.visitante_id
-                              )
+                const abierta = jornadaAbierta === jornada
 
-                            return (
-                              <div
-                                className="fecha-match"
-                                key={partido.id}
-                              >
+                const partidosJugados =
+                  partidosJornada.filter(
+                    partido => partido.jugado === true
+                  ).length
 
-                                {/* FECHA */}
+                const jornadaCompleta =
+                  partidosJornada.length > 0 &&
+                  partidosJugados === partidosJornada.length
 
-                                <div className="partido-fecha">
-                                  {formatearFecha(
-                                    partido.fecha
-                                  )}
-                                </div>
+                return (
+                  <section
+                    className={`fecha-acordeon ${abierta ? 'fecha-abierta' : ''
+                      }`}
+                    key={jornada}
+                  >
 
-                                {/* PARTIDO */}
+                    <button
+                      type="button"
+                      className="fecha-acordeon-header"
+                      onClick={() =>
+                        setJornadaAbierta(
+                          abierta ? null : jornada
+                        )
+                      }
+                      aria-expanded={abierta}
+                    >
 
-                                <div className="partido-equipos">
+                      <div className="fecha-header-left">
 
-  <div className="fecha-team local">
+                        <div className="fecha-chevron">
+                          {abierta ? '▴' : '▾'}
+                        </div>
 
-    {local && logosEquipos[local.nombre] && (
-      <img
-        src={logosEquipos[local.nombre]}
-        alt=""
-        className="equipo-icono"
-      />
-    )}
+                        <div className="fecha-info">
+                          <h2>Jornada {jornada}</h2>
 
-    <span>
-      {local?.nombre || 'Equipo local'}
-    </span>
+                          <p>
+                            {partidosJugados} de{' '}
+                            {partidosJornada.length} partidos
+                          </p>
+                        </div>
 
-  </div>
+                      </div>
 
-  <div className="fecha-vs">
-
-    {partido.jugado === true
-      ? `${partido.goles_local} - ${partido.goles_visitante}`
-      : 'VS'
-    }
-
-  </div>
-
-  <div className="fecha-team visitante">
-
-    {visitante && logosEquipos[visitante.nombre] && (
-      <img
-        src={logosEquipos[visitante.nombre]}
-        alt=""
-        className="equipo-icono"
-      />
-    )}
-
-    <span>
-      {visitante?.nombre || 'Equipo visitante'}
-    </span>
-
-  </div>
-
-</div>
-
-
-                              </div>
-                            )
-                          })}
-
+                      {jornadaCompleta && (
+                        <div className="fecha-estado">
+                          ✓ Completa
                         </div>
                       )}
 
-                    </section>
-                  )
-                }
-              )}
+                    </button>
 
-            </div>
-          )}
+                    {abierta && (
+                      <div className="fecha-acordeon-partidos">
+
+                        {partidosJornada.map(partido => (
+                          <Partido
+                            key={partido.id}
+                            partido={partido}
+                          />
+                        ))}
+
+                      </div>
+                    )}
+
+                  </section>
+                )
+              })}
+
+          </div>
+        )}
 
       </main>
 

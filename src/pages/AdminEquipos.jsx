@@ -294,11 +294,10 @@ function AdminEquipos() {
             {equipos.map(equipo => (
 
               <div
-                className={`admin-list-card ${
-                  equipo.activo
-                    ? ''
-                    : 'equipo-inactivo'
-                }`}
+                className={`admin-list-card ${equipo.activo
+                  ? ''
+                  : 'equipo-inactivo'
+                  }`}
                 key={equipo.id}
               >
 
