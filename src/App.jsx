@@ -11,6 +11,7 @@ import AdminJugadores from './pages/AdminJugadores'
 import AdminPartidos from './pages/AdminPartidos'
 import EstadisticasPartidos from "./pages/EstadisticasPartidos";
 import ProtectedRoute from './pages/ProtectedRoute'
+import CuadroFinal from './components/CuadroFinal'
 
 
 
@@ -37,69 +38,68 @@ function Inicio() {
 
           <div className="header-actions">
 
-  <Link
-    to="/login"
-    className="login-header-button"
-  >
-    👤 Iniciar sesión
-  </Link>
+            <Link
+              to="/login"
+              className="login-header-button"
+            >
+              👤 Iniciar sesión
+            </Link>
 
-  <div className="social-icons">
+            <div className="social-icons">
 
-    <a
-      href="https://api.whatsapp.com/send?phone=573108366617&text=Hola+FusionSoccer"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="social whatsapp"
-      aria-label="WhatsApp"
-    >
-      <i className="fa-brands fa-whatsapp"></i>
-    </a>
+              <a
+                href="https://api.whatsapp.com/send?phone=573108366617&text=Hola+FusionSoccer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social whatsapp"
+                aria-label="WhatsApp"
+              >
+                <i className="fa-brands fa-whatsapp"></i>
+              </a>
 
-    <a
-      href="https://www.instagram.com/fusionsoccer7/?hl=es"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="social instagram"
-      aria-label="Instagram"
-    >
-      <i className="fa-brands fa-instagram"></i>
-    </a>
+              <a
+                href="https://www.instagram.com/fusionsoccer7/?hl=es"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social instagram"
+                aria-label="Instagram"
+              >
+                <i className="fa-brands fa-instagram"></i>
+              </a>
 
-    <a
-      href="https://www.tiktok.com/@fusionsoccer7"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="social tiktok"
-      aria-label="TikTok"
-    >
-      <i className="fa-brands fa-tiktok"></i>
-    </a>
+              <a
+                href="https://www.tiktok.com/@fusionsoccer7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social tiktok"
+                aria-label="TikTok"
+              >
+                <i className="fa-brands fa-tiktok"></i>
+              </a>
 
-    <a
-      href="https://www.facebook.com/Fusionsoccer/"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="social facebook"
-      aria-label="Facebook"
-    >
-      <i className="fa-brands fa-facebook-f"></i>
-    </a>
+              <a
+                href="https://www.facebook.com/Fusionsoccer/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social facebook"
+                aria-label="Facebook"
+              >
+                <i className="fa-brands fa-facebook-f"></i>
+              </a>
 
-    <a
-      href="https://www.youtube.com/@FusionSoccer-c5t"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="social youtube"
-      aria-label="YouTube"
-    >
-      <i className="fa-brands fa-youtube"></i>
-    </a>
+              <a
+                href="https://www.youtube.com/@FusionSoccer-c5t"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social youtube"
+                aria-label="YouTube"
+              >
+                <i className="fa-brands fa-youtube"></i>
+              </a>
 
-  </div>
+            </div>
 
-</div>
-
+          </div>
 
         </div>
       </header>
@@ -122,11 +122,6 @@ function Inicio() {
 
         <section className="menu">
 
-          {/*</section></main>Link to="/partidos" className="menu-card">
-            <span className="icon">⚽</span>
-            <span>Partidos</span>
-          </Link>
-        */}
           <Link to="/fechas" className="menu-card">
             <span className="icon">📅</span>
             <span>Fechas</span>
@@ -143,11 +138,15 @@ function Inicio() {
           </Link>
 
           <Link to="/estadisticas" className="menu-card">
-    <span className="icon">⚽</span>
-    <span>Partidos</span>
-  </Link>
+            <span className="icon">⚽</span>
+            <span>Partidos</span>
+          </Link>
 
         </section>
+
+        {/* CUADRO DE SEMIFINALES Y GRAN FINAL */}
+
+        <CuadroFinal />
 
       </main>
 
@@ -158,6 +157,7 @@ function Inicio() {
     </div>
   )
 }
+
 
 function App() {
   return (

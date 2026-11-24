@@ -5065,3 +5065,154 @@ a {
   text-align: center;
   line-height: 1.2;
 }
+
+
+/* CUADRO DE FASES FINALES */
+
+.cuadro-final-section {
+  width: 100%;
+  max-width: 1100px;
+  margin: 35px auto;
+  padding: 25px;
+  background: #101a16;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 20px;
+  color: white;
+  box-sizing: border-box;
+}
+
+.cuadro-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.cuadro-titulo > span {
+  font-size: 35px;
+}
+
+.cuadro-titulo h2 {
+  margin: 0;
+  color: #e2bd54;
+}
+
+.cuadro-titulo p {
+  margin: 5px 0 0;
+  color: #aebbb3;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.cuadro-contenido {
+  display: grid;
+  grid-template-columns: 1fr 45px 1fr;
+  align-items: center;
+  gap: 15px;
+}
+
+.cuadro-columna h3 {
+  text-align: center;
+  color: #e2bd54;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.cuadro-partido {
+  background: #192820;
+  border: 1px solid #304638;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.cuadro-equipo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 5px;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.cuadro-equipo + .cuadro-equipo {
+  border-top: 1px solid #304638;
+}
+
+.cuadro-equipo strong {
+  margin-left: auto;
+  color: #e2bd54;
+  font-size: 17px;
+}
+
+.cuadro-logo {
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+}
+
+.cuadro-ganador {
+  color: #e2bd54;
+  font-weight: bold;
+}
+
+.cuadro-conector {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  color: #e2bd54;
+  font-size: 24px;
+  height: 160px;
+}
+
+.cuadro-campeon {
+  text-align: center;
+  color: #e2bd54;
+  padding: 15px;
+  border: 1px solid #c5a33d;
+  border-radius: 12px;
+  background: rgba(197, 163, 61, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cuadro-campeon strong {
+  font-size: 17px;
+}
+
+@media (max-width: 600px) {
+  .cuadro-final-section {
+    padding: 15px 10px;
+  }
+
+  .cuadro-contenido {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .cuadro-conector {
+    display: none;
+  }
+
+  .cuadro-columna-final {
+    margin-top: 10px;
+  }
+
+  .cuadro-equipo {
+    font-size: 11px;
+  }
+}
+
+.cuadro-fecha {
+  text-align: center;
+  color: #f8f7f2;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 0 10px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #304638;
+}
